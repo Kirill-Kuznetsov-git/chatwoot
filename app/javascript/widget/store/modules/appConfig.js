@@ -28,6 +28,7 @@ const state = {
   enableFileUpload: undefined,
   enableEmojiPicker: true,
   enableEndConversation: true,
+  activeConversationId: null,
 };
 
 export const getters = {
@@ -48,6 +49,7 @@ export const getters = {
   getShouldShowFilePicker: $state => $state.enableFileUpload,
   getShouldShowEmojiPicker: $state => $state.enableEmojiPicker,
   getCanUserEndConversation: $state => $state.enableEndConversation,
+  getActiveConversationId: $state => $state.activeConversationId,
 };
 
 export const actions = {
@@ -107,6 +109,9 @@ export const actions = {
     // See issue: https://github.com/chatwoot/chatwoot/issues/10736
     commit(SET_ROUTE_UPDATE_STATE, status);
   },
+  setActiveConversationId({ commit }, id) {
+    commit('SET_ACTIVE_CONVERSATION_ID', id);
+  },
 };
 
 export const mutations = {
@@ -143,6 +148,9 @@ export const mutations = {
   },
   [SET_ROUTE_UPDATE_STATE]($state, status) {
     $state.isUpdatingRoute = status;
+  },
+  SET_ACTIVE_CONVERSATION_ID($state, id) {
+    $state.activeConversationId = id;
   },
 };
 

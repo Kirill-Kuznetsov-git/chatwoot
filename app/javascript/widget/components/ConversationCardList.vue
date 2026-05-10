@@ -1,10 +1,14 @@
 <script>
-import { mapActions, mapGetters } from 'vuex';
+import { mapActions, mapGetters, mapMutations } from 'vuex';
 import { useRouter } from 'vue-router';
 import configMixin from 'widget/mixins/configMixin';
 import { IFrameHelper } from 'widget/helpers/utils';
 import { CHATWOOT_ON_START_CONVERSATION } from 'widget/constants/sdkEvents';
-import { L1_LABEL_PREFIX, L2_LABEL_PREFIX, hasLabelWithPrefix } from 'widget/constants/levels';
+import {
+  L1_LABEL_PREFIX,
+  L2_LABEL_PREFIX,
+  hasLabelWithPrefix,
+} from 'widget/constants/levels';
 
 export default {
   name: 'ConversationCardList',
@@ -16,10 +20,9 @@ export default {
   computed: {
     ...mapGetters({
       records: 'conversationList/getAll',
-      isFetching: 'conversationList/isFetching',
       hasL1: 'conversationList/hasL1Conversation',
       widgetColor: 'appConfig/getWidgetColor',
-      conversationSize: 'conversation/getConversationSize',
+      activeId: 'appConfig/getActiveConversationId',
     }),
     sortedRecords() {
       return [...this.records].sort(
@@ -35,6 +38,13 @@ export default {
   },
   methods: {
     ...mapActions('conversationList', ['fetchAll']),
+    ...mapActions('appConfig', ['setActiveConversationId']),
+    ...mapActions('conversation', ['fetchOldConversations']),
+    ...mapActions('conversationAttributes', [
+      'getAttributes',
+      'clearConversationAttributes',
+    ]),
+    ...mapMutations('conversation', ['clearConversations']),
     levelOf(labels) {
       if (hasLabelWithPrefix(labels, L2_LABEL_PREFIX)) return 'L2';
       if (hasLabelWithPrefix(labels, L1_LABEL_PREFIX)) return 'L1';
@@ -66,12 +76,27 @@ export default {
       if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}h`;
       return `${Math.floor(diffSec / 86400)}d`;
     },
+    async openConversation(conv) {
+      await this.setActiveConversationId(conv.id);
+      this.clearConversations();
+      this.clearConversationAttributes();
+      // Re-fetch attributes and messages for the now-active conversation.
+      // Both calls will pass conversation_id via axios interceptor.
+      await this.getAttributes();
+      await this.fetchOldConversations();
+      this.router.replace({ name: 'messages' });
+    },
     startNew() {
       if (!this.canStartNew) return;
+      // Detach from any currently-active conversation so the next message
+      // creates a fresh one on the backend.
+      this.setActiveConversationId(null);
+      this.clearConversations();
+      this.clearConversationAttributes();
       IFrameHelper.sendMessage({
         event: 'onEvent',
         eventIdentifier: CHATWOOT_ON_START_CONVERSATION,
-        data: { hasConversation: !!this.conversationSize },
+        data: { hasConversation: false },
       });
       if (this.preChatFormEnabled) {
         return this.router.replace({ name: 'prechat-form' });
@@ -86,8 +111,12 @@ export default {
   <div class="flex flex-col gap-3 w-full">
     <button
       type="button"
-      class="w-full inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 font-medium text-sm shadow outline-1 outline outline-n-container bg-n-background dark:bg-n-solid-2"
-      :class="canStartNew ? 'cursor-pointer text-white' : 'cursor-not-allowed text-n-slate-9'"
+      class="w-full inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 font-medium text-sm shadow outline-1 outline outline-n-container"
+      :class="
+        canStartNew
+          ? 'cursor-pointer text-white'
+          : 'cursor-not-allowed text-n-slate-9 bg-n-background dark:bg-n-solid-2'
+      "
       :style="canStartNew ? { backgroundColor: widgetColor } : {}"
       :disabled="!canStartNew"
       @click="startNew"
@@ -103,10 +132,16 @@ export default {
       {{ $t('L1_ALREADY_OPEN_HINT') }}
     </p>
 
-    <div
+    <button
       v-for="conv in sortedRecords"
       :key="conv.id"
-      class="w-full flex flex-col gap-1 shadow outline-1 outline outline-n-container rounded-xl bg-n-background dark:bg-n-solid-2 px-5 py-4"
+      type="button"
+      class="w-full text-left flex flex-col gap-1 shadow outline-1 outline outline-n-container rounded-xl bg-n-background dark:bg-n-solid-2 px-5 py-4 hover:bg-n-slate-2 dark:hover:bg-n-solid-3 transition-colors cursor-pointer"
+      :class="{
+        'ring-2': conv.id === activeId,
+      }"
+      :style="conv.id === activeId ? { '--tw-ring-color': widgetColor } : {}"
+      @click="openConversation(conv)"
     >
       <div class="flex justify-between items-start gap-2">
         <span class="font-medium text-n-slate-12 text-sm">
@@ -133,6 +168,6 @@ export default {
       >
         {{ previewOf(conv) }}
       </div>
-    </div>
+    </button>
   </div>
 </template>

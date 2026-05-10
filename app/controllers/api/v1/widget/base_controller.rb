@@ -17,7 +17,11 @@ class Api::V1::Widget::BaseController < ApplicationController
   end
 
   def conversation
-    @conversation ||= conversations.last
+    @conversation ||= if params[:conversation_id].present?
+                        conversations.find_by(display_id: params[:conversation_id])
+                      else
+                        conversations.last
+                      end
   end
 
   def create_conversation

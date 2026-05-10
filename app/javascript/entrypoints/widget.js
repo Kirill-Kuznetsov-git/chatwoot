@@ -5,6 +5,7 @@ import VueDOMPurifyHTML from 'vue-dompurify-html';
 import store from '../widget/store';
 import App from '../widget/App.vue';
 import ActionCableConnector from '../widget/helpers/actionCable';
+import { registerActiveConversationGetter } from '../widget/helpers/axios';
 import i18nMessages from '../widget/i18n';
 import router from '../widget/router';
 import { directive as onClickaway } from 'vue3-click-away';
@@ -26,6 +27,12 @@ const app = createApp(App);
 app.use(i18n);
 app.use(store);
 app.use(router);
+
+// Let widget API requests automatically include the currently-selected
+// conversation_id from the Vuex store.
+registerActiveConversationGetter(
+  () => store.getters['appConfig/getActiveConversationId']
+);
 app.use(VueDOMPurifyHTML, domPurifyConfig);
 app.directive('on-clickaway', onClickaway);
 
