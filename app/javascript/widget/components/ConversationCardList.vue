@@ -22,12 +22,16 @@ export default {
       records: 'conversationList/getAll',
       hasL1: 'conversationList/hasL1Conversation',
       widgetColor: 'appConfig/getWidgetColor',
-      activeId: 'appConfig/getActiveConversationId',
     }),
     sortedRecords() {
-      return [...this.records].sort(
-        (a, b) => (b.last_activity_at || 0) - (a.last_activity_at || 0)
-      );
+      // L1 (Support Chat) always on top; everything else sorted by recency.
+      const tier = labels =>
+        hasLabelWithPrefix(labels, L1_LABEL_PREFIX) ? 0 : 1;
+      return [...this.records].sort((a, b) => {
+        const t = tier(a.labels) - tier(b.labels);
+        if (t !== 0) return t;
+        return (b.last_activity_at || 0) - (a.last_activity_at || 0);
+      });
     },
     canStartNew() {
       return !this.hasL1;
@@ -49,6 +53,9 @@ export default {
       if (hasLabelWithPrefix(labels, L2_LABEL_PREFIX)) return 'L2';
       if (hasLabelWithPrefix(labels, L1_LABEL_PREFIX)) return 'L1';
       return null;
+    },
+    isL1(conv) {
+      return hasLabelWithPrefix(conv.labels, L1_LABEL_PREFIX);
     },
     categoryOf(labels) {
       if (!Array.isArray(labels)) return '';
@@ -138,9 +145,9 @@ export default {
       type="button"
       class="w-full text-left flex flex-col gap-1 shadow outline-1 outline outline-n-container rounded-xl bg-n-background dark:bg-n-solid-2 px-5 py-4 hover:bg-n-slate-2 dark:hover:bg-n-solid-3 transition-colors cursor-pointer"
       :class="{
-        'ring-2': conv.id === activeId,
+        'ring-2': isL1(conv),
       }"
-      :style="conv.id === activeId ? { '--tw-ring-color': widgetColor } : {}"
+      :style="isL1(conv) ? { '--tw-ring-color': widgetColor } : {}"
       @click="openConversation(conv)"
     >
       <div class="flex justify-between items-start gap-2">
