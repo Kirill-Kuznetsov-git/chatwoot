@@ -41,7 +41,7 @@ export default {
     this.fetchAll();
   },
   methods: {
-    ...mapActions('conversationList', ['fetchAll']),
+    ...mapActions('conversationList', ['fetchAll', 'markRead']),
     ...mapActions('appConfig', ['setActiveConversationId']),
     ...mapActions('conversation', ['fetchOldConversations']),
     ...mapActions('conversationAttributes', [
@@ -56,6 +56,11 @@ export default {
     },
     isL1(conv) {
       return hasLabelWithPrefix(conv.labels, L1_LABEL_PREFIX);
+    },
+    isUnread(conv) {
+      const m = conv && conv.last_message;
+      if (!m || m.message_type !== 1) return false;
+      return (m.created_at || 0) > (conv.contact_last_seen_at || 0);
     },
     categoryOf(labels) {
       if (!Array.isArray(labels)) return '';
@@ -85,6 +90,7 @@ export default {
     },
     async openConversation(conv) {
       await this.setActiveConversationId(conv.id);
+      this.markRead(conv.id);
       this.clearConversations();
       this.clearConversationAttributes();
       // Re-fetch attributes and messages for the now-active conversation.
@@ -151,18 +157,28 @@ export default {
       @click="openConversation(conv)"
     >
       <div class="flex justify-between items-start gap-2">
-        <span class="font-medium text-n-slate-12 text-sm">
-          <template v-if="levelOf(conv.labels) === 'L2'">
-            {{ $t('CONVERSATION_LEVEL_L2') }}
-          </template>
-          <template v-else-if="levelOf(conv.labels) === 'L1'">
-            {{ $t('CONVERSATION_LEVEL_L1') }}
-          </template>
-          <template v-else>
-            {{ $t('CONVERSATION_GENERIC') }}
-          </template>
-          <span v-if="categoryOf(conv.labels)" class="font-normal text-n-slate-11">
-            · {{ categoryOf(conv.labels) }}
+        <span class="font-medium text-n-slate-12 text-sm flex items-center gap-2">
+          <span
+            v-if="isUnread(conv)"
+            class="inline-block size-2 rounded-full"
+            :style="{ backgroundColor: widgetColor }"
+          />
+          <span>
+            <template v-if="levelOf(conv.labels) === 'L2'">
+              {{ $t('CONVERSATION_LEVEL_L2') }}
+            </template>
+            <template v-else-if="levelOf(conv.labels) === 'L1'">
+              {{ $t('CONVERSATION_LEVEL_L1') }}
+            </template>
+            <template v-else>
+              {{ $t('CONVERSATION_GENERIC') }}
+            </template>
+            <span
+              v-if="categoryOf(conv.labels)"
+              class="font-normal text-n-slate-11"
+            >
+              · {{ categoryOf(conv.labels) }}
+            </span>
           </span>
         </span>
         <span class="text-xs text-n-slate-11">

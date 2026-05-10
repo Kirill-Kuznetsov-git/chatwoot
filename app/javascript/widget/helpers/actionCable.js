@@ -54,6 +54,16 @@ class ActionCableConnector extends BaseActionCableConnector {
   };
 
   onMessageCreated = data => {
+    // Keep the multi-conversation list view in sync regardless of which
+    // conversation is currently open in the widget. Without this, new
+    // agent replies in a non-active conversation would never refresh
+    // the preview/badge of that card.
+    this.app.$store.dispatch('conversationList/applyIncomingMessage', data);
+
+    if (data.sender_type === 'User') {
+      playNewMessageNotificationInWidget();
+    }
+
     if (isMessageInActiveConversation(this.app.$store.getters, data)) {
       return;
     }
@@ -67,9 +77,6 @@ class ActionCableConnector extends BaseActionCableConnector {
       eventIdentifier: CHATWOOT_ON_MESSAGE,
       data,
     });
-    if (data.sender_type === 'User') {
-      playNewMessageNotificationInWidget();
-    }
   };
 
   onMessageUpdated = data => {
