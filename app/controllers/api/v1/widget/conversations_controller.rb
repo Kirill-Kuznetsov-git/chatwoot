@@ -6,6 +6,10 @@ class Api::V1::Widget::ConversationsController < Api::V1::Widget::BaseController
     @conversation = conversation
   end
 
+  def list_all
+    @conversations = conversations.where(status: %i[open pending]).order(last_activity_at: :desc).limit(20)
+  end
+
   def create
     ActiveRecord::Base.transaction do
       process_update_contact

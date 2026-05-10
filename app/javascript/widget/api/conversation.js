@@ -38,6 +38,12 @@ const getConversationAPI = async () => {
   return API.get(`/api/v1/widget/conversations${window.location.search}`);
 };
 
+const getAllConversationsAPI = async () => {
+  return API.get(
+    `/api/v1/widget/conversations/list_all${window.location.search}`
+  );
+};
+
 const toggleTyping = async ({ typingStatus }) => {
   return API.post(
     `/api/v1/widget/conversations/toggle_typing${window.location.search}`,
@@ -84,6 +90,7 @@ export {
   createConversationAPI,
   sendMessageAPI,
   getConversationAPI,
+  getAllConversationsAPI,
   getMessagesAPI,
   sendAttachmentAPI,
   toggleTyping,

@@ -46,7 +46,11 @@
   "END_CONVERSATION": "Завершить диалог",
   "CONTINUE_CONVERSATION": "Продолжить беседу",
   "YOU": "Вы",
-  "START_NEW_CONVERSATION": "Начать диалог",
+  "START_NEW_CONVERSATION": "Создать новый чат",
+  "L1_ALREADY_OPEN_HINT": "У вас уже есть открытый чат с поддержкой. Дождитесь ответа или передачи специалисту, прежде чем начать новый.",
+  "CONVERSATION_LEVEL_L1": "Чат с поддержкой",
+  "CONVERSATION_LEVEL_L2": "Специалист",
+  "CONVERSATION_GENERIC": "Обращение",
   "VIEW_UNREAD_MESSAGES": "У вас есть непрочитанные сообщения",
   "UNREAD_VIEW": {
     "VIEW_MESSAGES_BUTTON": "Посмотреть новые сообщения",

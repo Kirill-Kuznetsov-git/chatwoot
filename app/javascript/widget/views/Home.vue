@@ -1,5 +1,6 @@
 <script>
 import TeamAvailability from 'widget/components/TeamAvailability.vue';
+import ConversationCardList from 'widget/components/ConversationCardList.vue';
 import { mapGetters } from 'vuex';
 import { useRouter } from 'vue-router';
 import configMixin from 'widget/mixins/configMixin';
@@ -9,6 +10,7 @@ export default {
   components: {
     ArticleContainer,
     TeamAvailability,
+    ConversationCardList,
   },
   mixins: [configMixin],
   setup() {
@@ -36,11 +38,14 @@ export default {
 <template>
   <div class="z-50 flex flex-col justify-end flex-1 w-full p-4 gap-4">
     <TeamAvailability
+      v-if="!!conversationSize"
       :available-agents="availableAgents"
       :has-conversation="!!conversationSize"
       :unread-count="unreadMessageCount"
       @start-conversation="startConversation"
     />
+
+    <ConversationCardList />
 
     <ArticleContainer />
   </div>

@@ -47,6 +47,10 @@
   "CONTINUE_CONVERSATION": "Continue conversation",
   "YOU": "You",
   "START_NEW_CONVERSATION": "Start a new conversation",
+  "L1_ALREADY_OPEN_HINT": "You already have an open chat with support. Wait for a reply or escalation before starting a new one.",
+  "CONVERSATION_LEVEL_L1": "Support chat",
+  "CONVERSATION_LEVEL_L2": "Specialist",
+  "CONVERSATION_GENERIC": "Conversation",
   "VIEW_UNREAD_MESSAGES": "You have unread messages",
   "UNREAD_VIEW": {
     "VIEW_MESSAGES_BUTTON": "See new messages",
