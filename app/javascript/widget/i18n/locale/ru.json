@@ -153,5 +153,13 @@
   },
   "FOOTER_REPLY_TO": {
     "REPLY_TO": "Ответить:"
+  },
+  "CUSTOM_ATTRIBUTE_OPTIONS": {
+    "category": {
+      "withdrawals": "Вывод средств",
+      "deposits": "Депозиты",
+      "account": "Аккаунт",
+      "other": "Другое"
+    }
   }
 }

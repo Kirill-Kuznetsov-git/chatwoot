@@ -219,17 +219,22 @@ export default {
       return type;
     },
     getOptions(item) {
-      if (item.type === 'select') {
-        let values = {};
-        item.values.forEach((value, index) => {
-          values = {
-            ...values,
-            [index]: value,
-          };
-        });
-        return values;
-      }
-      return {};
+      if (item.type !== 'select') return {};
+      // Локализация значений списка Custom Attribute.
+      // Хранилище в Chatwoot держит технические ключи: "withdrawals",
+      // "deposits", ... Виджет рендерит их с переводом из i18n под
+      // ключом CUSTOM_ATTRIBUTE_OPTIONS.<attribute_key>.<value>.
+      // Если перевода нет — fallback на raw value (старое поведение).
+      // FormKit для object-options использует key как submit value, поэтому
+      // в conversation.custom_attributes уйдёт технический ключ — он же
+      // используется в automation rules для маппинга в labels.
+      let values = {};
+      item.values.forEach(value => {
+        const i18nKey = `CUSTOM_ATTRIBUTE_OPTIONS.${item.name}.${value}`;
+        const translated = this.$t(i18nKey);
+        values[value] = translated === i18nKey ? value : translated;
+      });
+      return values;
     },
     onSubmit() {
       const { emailAddress, fullName, phoneNumber, message } = this.formValues;

@@ -153,5 +153,13 @@
   },
   "FOOTER_REPLY_TO": {
     "REPLY_TO": "Replying to:"
+  },
+  "CUSTOM_ATTRIBUTE_OPTIONS": {
+    "category": {
+      "withdrawals": "Withdrawals",
+      "deposits": "Deposits",
+      "account": "Account",
+      "other": "Other"
+    }
   }
 }
