@@ -156,9 +156,14 @@
   },
   "CUSTOM_ATTRIBUTE_OPTIONS": {
     "category": {
-      "withdrawals": "Withdrawals",
-      "deposits": "Deposits",
-      "account": "Account",
+      "payment": "Payment / billing",
+      "withdrawal": "Withdrawal / cancel withdrawal",
+      "item_not_received": "Item not received",
+      "robux_gamepass_giftcard": "Robux / GamePass / Gift Card",
+      "account_roblox": "Account / Roblox",
+      "selling_inventory_rating": "Selling / inventory / rating",
+      "site_error": "Site error",
+      "promo_giveaway": "Promo code / giveaway",
       "other": "Other"
     }
   }

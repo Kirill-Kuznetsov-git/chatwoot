@@ -156,9 +156,14 @@
   },
   "CUSTOM_ATTRIBUTE_OPTIONS": {
     "category": {
-      "withdrawals": "Вывод средств",
-      "deposits": "Депозиты",
-      "account": "Аккаунт",
+      "payment": "Пополнение / оплата",
+      "withdrawal": "Вывод средств / отмена вывода",
+      "item_not_received": "Предмет не пришёл",
+      "robux_gamepass_giftcard": "Robux / GamePass / Gift Card",
+      "account_roblox": "Аккаунт / Roblox",
+      "selling_inventory_rating": "Продажа / инвентарь / рейтинг",
+      "site_error": "Ошибка сайта",
+      "promo_giveaway": "Промокод / розыгрыш",
       "other": "Другое"
     }
   }
