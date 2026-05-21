@@ -22,6 +22,7 @@ export const actions = {
       const [message = {}] = messages;
       commit('pushMessageToConversation', message);
       dispatch('conversationAttributes/getAttributes', {}, { root: true });
+      dispatch('conversationList/fetchAll', null, { root: true });
       // Emit event to notify that conversation is created and show the chat screen
       emitter.emit(ON_CONVERSATION_CREATED);
     } catch (error) {
