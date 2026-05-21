@@ -1,5 +1,7 @@
 class Api::V1::Widget::ConversationsController < Api::V1::Widget::BaseController
   include Events::Types
+  skip_before_action :set_contact, only: [:list_all], raise: false
+  before_action :set_contact_safely, only: [:list_all]
   before_action :render_not_found_if_empty, only: [:toggle_typing, :toggle_status, :set_custom_attributes, :destroy_custom_attributes]
 
   def index
@@ -7,7 +9,11 @@ class Api::V1::Widget::ConversationsController < Api::V1::Widget::BaseController
   end
 
   def list_all
-    @conversations = conversations.where(status: %i[open pending]).order(last_activity_at: :desc).limit(20)
+    if @contact_inbox.nil?
+      @conversations = []
+    else
+      @conversations = conversations.where(status: %i[open pending]).order(last_activity_at: :desc).limit(20)
+    end
   end
 
   def create
@@ -96,6 +102,12 @@ class Api::V1::Widget::ConversationsController < Api::V1::Widget::BaseController
 
   def render_not_found_if_empty
     return head :not_found if conversation.nil?
+  end
+
+  def set_contact_safely
+    @contact_inbox = @web_widget.inbox.contact_inboxes.find_by(source_id: auth_token_params[:source_id])
+    @contact = @contact_inbox&.contact
+    Current.contact = @contact if @contact
   end
 
   def permitted_params
