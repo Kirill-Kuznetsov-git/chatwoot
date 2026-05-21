@@ -170,8 +170,7 @@ export default {
     },
     getValue({ name, type }) {
       if (type === 'select') {
-        return this.enabledPreChatFields.find(option => option.name === name)
-          .values[this.formValues[name]];
+        return this.formValues[name] || null;
       }
       return this.formValues[name] || null;
     },
