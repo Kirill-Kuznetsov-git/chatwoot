@@ -127,7 +127,7 @@ export default {
       class="w-full inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 font-medium text-sm shadow outline-1 outline outline-n-container"
       :class="
         canStartNew
-          ? 'cursor-pointer text-white'
+          ? 'cursor-pointer text-black'
           : 'cursor-not-allowed text-n-slate-9 bg-n-background dark:bg-n-solid-2'
       "
       :style="canStartNew ? { backgroundColor: widgetColor } : {}"
