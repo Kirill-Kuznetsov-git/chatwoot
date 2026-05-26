@@ -12,7 +12,7 @@ export const SDK_CSS = `
   overflow: hidden !important;
   position: fixed !important;
   transition: opacity 0.2s linear, transform 0.25s linear;
-  z-index: 2147483000 !important;
+  z-index: 500;
 }
 
 .woot-widget-holder.woot-widget-holder--flat {
@@ -50,7 +50,7 @@ export const SDK_CSS = `
   position: fixed;
   user-select: none;
   width: 64px;
-  z-index: 2147483000 !important;
+  z-index: 500;
   overflow: hidden;
 }
 
@@ -275,6 +275,40 @@ export const SDK_CSS = `
     opacity: 0;
     visibility: hidden !important;
     z-index: -1 !important;
+  }
+
+  /* Smaller bubble on mobile (~25% smaller than 64x64 default) */
+  .woot-widget-bubble {
+    height: 48px;
+    width: 48px;
+  }
+
+  .woot-widget-bubble svg {
+    height: 20px;
+    margin: 14px;
+    width: 20px;
+  }
+
+  .woot-widget-bubble.woot--close::before,
+  .woot-widget-bubble.woot--close::after {
+    height: 20px;
+    left: 23px;
+    top: 14px;
+  }
+
+  .woot-widget-bubble.woot-widget-bubble--flat {
+    height: 42px;
+    width: 42px;
+  }
+
+  .woot-widget-bubble.woot-widget-bubble--flat svg {
+    margin: 11px;
+  }
+
+  .woot-widget-bubble.woot-widget-bubble--flat.woot--close::before,
+  .woot-widget-bubble.woot-widget-bubble--flat.woot--close::after {
+    left: 20px;
+    top: 11px;
   }
 }
 
