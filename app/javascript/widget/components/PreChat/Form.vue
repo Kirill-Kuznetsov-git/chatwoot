@@ -357,4 +357,13 @@ export default {
 .formkit-messages {
   @apply list-none m-0 p-0;
 }
+
+// Native <select> dropdown options are rendered by the OS/browser, not by our
+// CSS. In dark mode the field inherits light text, but the option popup keeps a
+// light background → light text on light bg = invisible. Force readable colors
+// on the options explicitly so the list is legible in both themes.
+.formkit-outer select option {
+  color: #1f2d3d;
+  background-color: #ffffff;
+}
 </style>
