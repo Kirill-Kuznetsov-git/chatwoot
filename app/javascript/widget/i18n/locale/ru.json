@@ -1,4 +1,17 @@
 {
+  "STARPETS_WIDGET": {
+    "WELCOME_TITLE": "Поддержка StarPets",
+    "WELCOME_TAGLINE": "Привет! 👋\n\nРасскажи, что случилось — поможем разобраться.\n\nОпиши проблему одним сообщением.",
+    "PRE_CHAT_MESSAGE": "Расскажи, что случилось. Так мы быстрее передадим обращение нужному специалисту.",
+    "FIELDS": {
+      "emailAddress": "Email",
+      "fullName": "Имя",
+      "category": "Категория",
+      "phoneNumber": "Телефон",
+      "starpets_id": "Starpets ID",
+      "language": "Язык"
+    }
+  },
   "COMPONENTS": {
     "FILE_BUBBLE": {
       "DOWNLOAD": "Скачать",

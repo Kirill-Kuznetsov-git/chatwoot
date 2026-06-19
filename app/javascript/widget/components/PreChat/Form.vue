@@ -70,7 +70,10 @@ export default {
     },
     headerMessage() {
       if (this.preChatFormEnabled) {
-        return this.options.preChatMessage;
+        return (
+          this.options.preChatMessage ||
+          this.$t('STARPETS_WIDGET.PRE_CHAT_MESSAGE')
+        );
       }
       if (this.hasActiveCampaign) {
         return this.$t('PRE_CHAT_FORM.CAMPAIGN_HEADER');
@@ -162,8 +165,13 @@ export default {
     isContactFieldRequired(field) {
       return this.preChatFields.find(option => option.name === field).required;
     },
-    getLabel({ label }) {
-      return label;
+    getLabel({ label, name }) {
+      if (label) return label;
+      // Fall back to localized field labels when the inbox leaves the label
+      // blank (used by the product inboxes that rely on widget i18n).
+      const key = `STARPETS_WIDGET.FIELDS.${name}`;
+      const translated = this.$t(key);
+      return translated === key ? label : translated;
     },
     getPlaceHolder({ placeholder }) {
       return placeholder;

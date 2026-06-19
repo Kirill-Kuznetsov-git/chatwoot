@@ -1,4 +1,17 @@
 {
+  "STARPETS_WIDGET": {
+    "WELCOME_TITLE": "StarPets Destek",
+    "WELCOME_TAGLINE": "Selam! 👋\n\nAnlat bakalım, ne oldu — birlikte çözeriz.\n\nSorununu tek mesajda anlatıver.",
+    "PRE_CHAT_MESSAGE": "Ne olduğunu anlat. Böylece talebini ilgili uzmana daha hızlı iletebiliriz.",
+    "FIELDS": {
+      "emailAddress": "E-posta",
+      "fullName": "Ad Soyad",
+      "category": "Kategori",
+      "phoneNumber": "Telefon",
+      "starpets_id": "Starpets ID",
+      "language": "Dil"
+    }
+  },
   "COMPONENTS": {
     "FILE_BUBBLE": {
       "DOWNLOAD": "İndir",

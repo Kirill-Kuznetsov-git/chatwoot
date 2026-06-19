@@ -39,9 +39,10 @@ export default {
       return !this.isOnHomeView;
     },
     hasIntroText() {
-      return (
-        this.channelConfig.welcomeTitle || this.channelConfig.welcomeTagline
-      );
+      // We always render a localized welcome via the STARPETS_WIDGET i18n
+      // fallback, so the expanded header is shown even when the inbox has no
+      // welcome title/tagline configured.
+      return true;
     },
     showBackButton() {
       return ['article-viewer', 'messages', 'prechat-form'].includes(
@@ -119,9 +120,15 @@ export default {
       >
         <ChatHeaderExpanded
           v-if="!isHeaderCollapsed"
-          :intro-heading="appConfig.welcomeTitle || channelConfig.welcomeTitle"
+          :intro-heading="
+            appConfig.welcomeTitle ||
+            channelConfig.welcomeTitle ||
+            $t('STARPETS_WIDGET.WELCOME_TITLE')
+          "
           :intro-body="
-            appConfig.welcomeDescription || channelConfig.welcomeTagline
+            appConfig.welcomeDescription ||
+            channelConfig.welcomeTagline ||
+            $t('STARPETS_WIDGET.WELCOME_TAGLINE')
           "
           :avatar-url="channelConfig.avatarUrl"
           :show-popout-button="appConfig.showPopoutButton"
