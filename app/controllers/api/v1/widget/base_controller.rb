@@ -25,7 +25,17 @@ class Api::V1::Widget::BaseController < ApplicationController
   end
 
   def create_conversation
-    ::Conversation.create!(conversation_params)
+    reusable_open_conversation || ::Conversation.create!(conversation_params)
+  end
+
+  # When the inbox locks to a single conversation, route a new widget message
+  # into the contact's existing OPEN/PENDING conversation instead of creating a
+  # second one. Resolved conversations are not reused, so the customer can start
+  # a fresh conversation once the previous one is closed.
+  def reusable_open_conversation
+    return unless inbox.lock_to_single_conversation?
+
+    @contact_inbox.conversations.where(inbox_id: inbox.id, status: %i[open pending]).last
   end
 
   def inbox
