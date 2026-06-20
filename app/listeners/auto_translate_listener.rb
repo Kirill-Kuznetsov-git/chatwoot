@@ -1,9 +1,11 @@
-# Enqueues auto-translation of messages, both directions, only for human-handled
-# conversations (bot/pending conversations are skipped because the AI agent
-# already replies in the user's language). Gated OFF by default
+# Enqueues auto-translation of messages, both directions. Gated OFF by default
 # (AUTO_TRANSLATE_ENABLED). Triggers:
-#   - message_created (incoming): customer -> operator's UI language.
-#   - message_created (outgoing): operator -> customer's front-end language.
+#   - message_created (incoming): customer -> operator's UI language. Only once a
+#     human operator owns the conversation (status open + assignee), since the AI
+#     agent handles bot/pending conversations in the user's language already.
+#   - message_created (outgoing): human operator reply -> customer's language,
+#     regardless of assignment. human_response? excludes AgentBot/Captain/
+#     automation/campaign so bot output is never re-translated.
 #   - assignee_changed: on hand-off to a human, back-fill earlier incoming msgs.
 class AutoTranslateListener < BaseListener
   def message_created(event)
@@ -38,11 +40,16 @@ class AutoTranslateListener < BaseListener
     human_owned_text?(message)
   end
 
+  # Translate any human operator reply — regardless of assignment. human_response?
+  # already excludes AgentBot ("StarPets AI" replies in the user's language),
+  # Captain, automation rules and campaigns, so we don't re-translate bot output.
   def outgoing_eligible?(message)
-    return false unless message.outgoing?
+    return false unless message.human_response?
+    return false if message.private?
     return false unless message.content_type == 'text'
+    return false if message.content.blank?
 
-    human_owned_text?(message)
+    true
   end
 
   def human_owned_text?(message)
