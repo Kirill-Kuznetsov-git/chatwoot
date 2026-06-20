@@ -312,17 +312,20 @@ export default {
             message.customAttribute
           );
         } else if (message.event === 'set-locale') {
+          const previousLocale = this.$root.$i18n.locale;
           this.setLocale(message.locale);
           this.setBubbleLabel();
           // Persist the chosen language on the contact so outgoing
-          // auto-translation targets the language the visitor is actually
-          // reading the widget in. We read back $i18n.locale (the validated
-          // value setLocale applied) rather than message.locale, and it is the
-          // same key the widget renders translations under — keeping the
-          // translation target and the render lookup in sync on every switch.
-          this.$store.dispatch('contacts/setCustomAttributes', {
-            language: this.$root.$i18n.locale,
-          });
+          // auto-translation targets the language the visitor reads the widget
+          // in (same key the widget renders translations under). Only when the
+          // locale ACTUALLY changed — otherwise repeated setLocale calls (the
+          // parent site re-applying the locale on every load) would flood
+          // PATCH /widget/contact and overload the web dynos.
+          if (this.$root.$i18n.locale !== previousLocale) {
+            this.$store.dispatch('contacts/setCustomAttributes', {
+              language: this.$root.$i18n.locale,
+            });
+          }
         } else if (message.event === 'set-color-scheme') {
           this.setColorScheme(message.darkMode);
         } else if (message.event === 'toggle-open') {
