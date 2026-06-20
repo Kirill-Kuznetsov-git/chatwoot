@@ -76,7 +76,20 @@ export default {
       return parts.join(' ').replace(/\b\w/g, c => c.toUpperCase());
     },
     previewOf(conv) {
-      const text = conv?.last_message?.content || '';
+      const message = conv?.last_message;
+      let text = message?.content || '';
+      // Mirror AgentMessage's displayContent: show the translation matching the
+      // widget locale for agent/outgoing messages, else the original content.
+      const isAgentMessage =
+        message?.message_type === 1 || message?.message_type === 3;
+      const translations = message?.content_attributes?.translations;
+      if (isAgentMessage && translations) {
+        const locale = this.$root.$i18n.locale;
+        text =
+          translations[locale] ||
+          translations[locale?.split(/[-_]/)[0]] ||
+          text;
+      }
       const trimmed = text.replace(/\s+/g, ' ').trim();
       return trimmed.length > 80 ? `${trimmed.slice(0, 77)}…` : trimmed;
     },
@@ -112,9 +125,10 @@ export default {
         data: { hasConversation: false },
       });
       if (this.preChatFormEnabled) {
-        return this.router.replace({ name: 'prechat-form' });
+        this.router.replace({ name: 'prechat-form' });
+        return;
       }
-      return this.router.replace({ name: 'messages' });
+      this.router.replace({ name: 'messages' });
     },
   },
 };
@@ -157,7 +171,9 @@ export default {
       @click="openConversation(conv)"
     >
       <div class="flex justify-between items-start gap-2">
-        <span class="font-medium text-n-slate-12 text-sm flex items-center gap-2">
+        <span
+          class="font-medium text-n-slate-12 text-sm flex items-center gap-2"
+        >
           <span
             v-if="isUnread(conv)"
             class="inline-block size-2 rounded-full"

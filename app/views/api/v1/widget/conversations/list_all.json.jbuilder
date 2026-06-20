@@ -12,6 +12,7 @@ json.array! @conversations do |conversation|
       json.id last_message.id
       json.content last_message.content
       json.message_type last_message.message_type_before_type_cast
+      json.content_attributes last_message.content_attributes
       json.created_at last_message.created_at.to_i
     end
   else
