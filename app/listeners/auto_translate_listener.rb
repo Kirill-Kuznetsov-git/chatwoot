@@ -1,17 +1,21 @@
-# Enqueues auto-translation of incoming customer messages into the operator's
-# language. Gated OFF by default (AUTO_TRANSLATE_ENABLED) and only for
-# human-handled conversations — bot/pending conversations are skipped because
-# the AI agent already replies in the user's language. Two triggers:
-#   - message_created: messages arriving after a human already owns the conv.
-#   - assignee_changed: on hand-off to a human, back-fill earlier messages.
+# Enqueues auto-translation of messages, both directions, only for human-handled
+# conversations (bot/pending conversations are skipped because the AI agent
+# already replies in the user's language). Gated OFF by default
+# (AUTO_TRANSLATE_ENABLED). Triggers:
+#   - message_created (incoming): customer -> operator's UI language.
+#   - message_created (outgoing): operator -> customer's front-end language.
+#   - assignee_changed: on hand-off to a human, back-fill earlier incoming msgs.
 class AutoTranslateListener < BaseListener
   def message_created(event)
     return unless ENV['AUTO_TRANSLATE_ENABLED'] == 'true'
 
     message = extract_message_and_account(event)[0]
-    return unless eligible?(message)
 
-    AutoTranslateJob.perform_later(message.id)
+    if incoming_eligible?(message)
+      AutoTranslateJob.perform_later(message.id)
+    elsif outgoing_eligible?(message)
+      OutgoingAutoTranslateJob.perform_later(message.id)
+    end
   end
 
   # On hand-off to a human operator (assignee.changed), back-fill translations
@@ -28,8 +32,20 @@ class AutoTranslateListener < BaseListener
 
   private
 
-  def eligible?(message)
+  def incoming_eligible?(message)
     return false unless message.incoming?
+
+    human_owned_text?(message)
+  end
+
+  def outgoing_eligible?(message)
+    return false unless message.outgoing?
+    return false unless message.content_type == 'text'
+
+    human_owned_text?(message)
+  end
+
+  def human_owned_text?(message)
     return false if message.private?
     return false if message.content.blank?
 

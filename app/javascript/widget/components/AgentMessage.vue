@@ -55,6 +55,24 @@ export default {
       }
       return this.message.content;
     },
+    // For agent/outgoing messages, render the auto-translation matching the
+    // widget locale when one exists; otherwise fall back to the original
+    // operator text. Incoming/customer messages always keep their own content.
+    displayContent() {
+      const isAgentMessage =
+        this.messageType === MESSAGE_TYPE.OUTGOING ||
+        this.messageType === MESSAGE_TYPE.TEMPLATE;
+      const { translations } = this.messageContentAttributes;
+      if (!isAgentMessage || !translations) {
+        return this.message.content;
+      }
+      const locale = this.$root.$i18n.locale;
+      return (
+        translations[locale] ||
+        translations[locale?.split(/[-_]/)[0]] ||
+        this.message.content
+      );
+    },
     readableTime() {
       const { created_at: createdAt = '' } = this.message;
       return messageStamp(createdAt, 'LLL d yyyy, h:mm a');
@@ -202,7 +220,7 @@ export default {
               :message-content-attributes="messageContentAttributes"
               :message-id="message.id"
               :message-type="messageType"
-              :message="message.content"
+              :message="displayContent"
             />
             <div
               v-if="hasAttachments"
