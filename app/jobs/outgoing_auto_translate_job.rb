@@ -25,11 +25,16 @@ class OutgoingAutoTranslateJob < ApplicationJob
 
   private
 
-  # The customer's chosen front-end language (matches the widget render locale),
-  # taken from the pre-chat / front-end 'language' contact attribute. We skip
-  # translation when it's unknown rather than guessing from the browser.
+  # The customer's language, by priority:
+  #   1) front-end chosen language (contact custom attribute 'language') — exact,
+  #      matches the widget render locale; ~96% of widget conversations.
+  #   2) browser Accept-Language (conversation.additional_attributes.browser_language)
+  #      — fallback when the front-end language wasn't recorded (~the rest); an
+  #      approximation (browser locale may differ from the chosen UI language).
+  # Returns the normalized base code (e.g. 'pt-BR' -> 'pt'); nil if nothing known.
   def resolve_customer_locale(conversation)
-    lang = conversation.contact&.custom_attributes&.dig('language')
-    lang.presence&.to_s&.split(/[-_]/)&.first&.downcase
+    lang = conversation.contact&.custom_attributes&.dig('language').presence ||
+           conversation.additional_attributes&.dig('browser_language').presence
+    lang&.to_s&.split(/[-_]/)&.first&.downcase
   end
 end
