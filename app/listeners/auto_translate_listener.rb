@@ -44,7 +44,8 @@ class AutoTranslateListener < BaseListener
   # already excludes AgentBot ("StarPets AI" replies in the user's language),
   # Captain, automation rules and campaigns, so we don't re-translate bot output.
   def outgoing_eligible?(message)
-    return false unless message.human_response?
+    # human_response? is private on Message; call via send (no public equivalent).
+    return false unless message.send(:human_response?)
     return false if message.private?
     return false unless message.content_type == 'text'
     return false if message.content.blank?
