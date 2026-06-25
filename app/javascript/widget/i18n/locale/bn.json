@@ -1,4 +1,17 @@
 {
+  "STARPETS_WIDGET": {
+    "WELCOME_TITLE": "StarPets সাপোর্ট",
+    "WELCOME_TAGLINE": "হ্যালো! 👋\n\nকী হয়েছে আমাদের জানান — আমরা এটি সমাধানে আপনাকে সাহায্য করব।\n\nএক বার্তায় আপনার সমস্যা বর্ণনা করুন।",
+    "PRE_CHAT_MESSAGE": "কী হয়েছে আমাদের জানান। এতে আপনার বার্তা দ্রুত সঠিক সাপোর্ট টিমে পাঠাতে সুবিধা হয়।",
+    "FIELDS": {
+      "emailAddress": "ইমেইল",
+      "fullName": "পুরো নাম",
+      "category": "বিভাগ",
+      "phoneNumber": "ফোন নম্বর",
+      "starpets_id": "Starpets ID",
+      "language": "ভাষা"
+    }
+  },
   "COMPONENTS": {
     "FILE_BUBBLE": {
       "DOWNLOAD": "Download",

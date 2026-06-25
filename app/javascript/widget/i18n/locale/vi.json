@@ -1,4 +1,17 @@
 {
+  "STARPETS_WIDGET": {
+    "WELCOME_TITLE": "Hỗ trợ StarPets",
+    "WELCOME_TAGLINE": "Chào bạn! 👋\n\nHãy cho chúng tôi biết chuyện gì đã xảy ra — chúng tôi sẽ giúp bạn giải quyết.\n\nMô tả vấn đề của bạn trong một tin nhắn.",
+    "PRE_CHAT_MESSAGE": "Hãy cho chúng tôi biết chuyện gì đã xảy ra. Điều này giúp chuyển tin nhắn của bạn đến đúng nhóm hỗ trợ nhanh hơn.",
+    "FIELDS": {
+      "emailAddress": "Email",
+      "fullName": "Họ và tên",
+      "category": "Danh mục",
+      "phoneNumber": "Số điện thoại",
+      "starpets_id": "Starpets ID",
+      "language": "Ngôn ngữ"
+    }
+  },
   "COMPONENTS": {
     "FILE_BUBBLE": {
       "DOWNLOAD": "Tải xuống",

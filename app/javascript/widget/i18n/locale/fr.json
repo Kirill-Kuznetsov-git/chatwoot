@@ -1,4 +1,17 @@
 {
+  "STARPETS_WIDGET": {
+    "WELCOME_TITLE": "Support StarPets",
+    "WELCOME_TAGLINE": "Bonjour ! 👋\n\nDis-nous ce qui s'est passé — on va t'aider à régler ça.\n\nDécris ton problème en un seul message.",
+    "PRE_CHAT_MESSAGE": "Dis-nous ce qui s'est passé. Cela nous aide à transmettre ton message à la bonne équipe plus vite.",
+    "FIELDS": {
+      "emailAddress": "E-mail",
+      "fullName": "Nom complet",
+      "category": "Catégorie",
+      "phoneNumber": "Numéro de téléphone",
+      "starpets_id": "Starpets ID",
+      "language": "Langue"
+    }
+  },
   "COMPONENTS": {
     "FILE_BUBBLE": {
       "DOWNLOAD": "Télécharger",

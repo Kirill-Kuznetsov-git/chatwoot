@@ -143,8 +143,23 @@ export default {
         });
       });
     },
-    setLocale(localeWithVariation) {
-      if (!localeWithVariation) return;
+    setLocale(rawLocale) {
+      if (!rawLocale) return;
+      // StarPets platform codes → Chatwoot locale codes (часть — коды стран).
+      const LOCALE_ALIASES = {
+        vn: 'vi',
+        ph: 'tl',
+        ua: 'uk',
+        uz: 'ru',
+        pk: 'ur',
+        bd: 'bn',
+        'es-mx': 'es',
+        es_mx: 'es',
+        'pt-br': 'pt_BR',
+        pt_br: 'pt_BR',
+      };
+      const localeWithVariation =
+        LOCALE_ALIASES[String(rawLocale).toLowerCase()] || rawLocale;
       const { enabledLanguages } = window.chatwootWebChannel;
       const localeWithoutVariation = localeWithVariation.split('_')[0];
       const hasLocaleWithoutVariation = enabledLanguages.some(

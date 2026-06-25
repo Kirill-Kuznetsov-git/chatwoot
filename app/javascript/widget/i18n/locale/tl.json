@@ -1,4 +1,17 @@
 {
+  "STARPETS_WIDGET": {
+    "WELCOME_TITLE": "StarPets Support",
+    "WELCOME_TAGLINE": "Kumusta! 👋\n\nSabihin sa amin kung ano ang nangyari — tutulungan ka naming ayusin ito.\n\nIlarawan ang iyong problema sa isang mensahe.",
+    "PRE_CHAT_MESSAGE": "Sabihin sa amin kung ano ang nangyari. Nakakatulong ito para mas mabilis na maipadala ang iyong mensahe sa tamang support team.",
+    "FIELDS": {
+      "emailAddress": "Email",
+      "fullName": "Buong pangalan",
+      "category": "Kategorya",
+      "phoneNumber": "Numero ng telepono",
+      "starpets_id": "Starpets ID",
+      "language": "Wika"
+    }
+  },
   "COMPONENTS": {
     "FILE_BUBBLE": {
       "DOWNLOAD": "Download",

@@ -1,4 +1,17 @@
 {
+  "STARPETS_WIDGET": {
+    "WELCOME_TITLE": "StarPets سپورٹ",
+    "WELCOME_TAGLINE": "سلام! 👋\n\nہمیں بتائیں کیا ہوا — ہم اسے حل کرنے میں آپ کی مدد کریں گے۔\n\nاپنا مسئلہ ایک پیغام میں بیان کریں۔",
+    "PRE_CHAT_MESSAGE": "ہمیں بتائیں کیا ہوا۔ اس سے ہمیں آپ کا پیغام درست سپورٹ ٹیم تک تیزی سے پہنچانے میں مدد ملتی ہے۔",
+    "FIELDS": {
+      "emailAddress": "ای میل",
+      "fullName": "پورا نام",
+      "category": "زمرہ",
+      "phoneNumber": "فون نمبر",
+      "starpets_id": "Starpets ID",
+      "language": "زبان"
+    }
+  },
   "COMPONENTS": {
     "FILE_BUBBLE": {
       "DOWNLOAD": "ڈاؤن لوڈ کریں",

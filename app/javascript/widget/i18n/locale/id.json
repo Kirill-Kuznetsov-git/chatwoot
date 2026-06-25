@@ -1,4 +1,17 @@
 {
+  "STARPETS_WIDGET": {
+    "WELCOME_TITLE": "Dukungan StarPets",
+    "WELCOME_TAGLINE": "Hai! 👋\n\nCeritakan apa yang terjadi — kami akan membantu menyelesaikannya.\n\nJelaskan masalahmu dalam satu pesan.",
+    "PRE_CHAT_MESSAGE": "Ceritakan apa yang terjadi. Ini membantu kami mengirim pesanmu ke tim dukungan yang tepat lebih cepat.",
+    "FIELDS": {
+      "emailAddress": "Email",
+      "fullName": "Nama lengkap",
+      "category": "Kategori",
+      "phoneNumber": "Nomor telepon",
+      "starpets_id": "Starpets ID",
+      "language": "Bahasa"
+    }
+  },
   "COMPONENTS": {
     "FILE_BUBBLE": {
       "DOWNLOAD": "Unduh",
