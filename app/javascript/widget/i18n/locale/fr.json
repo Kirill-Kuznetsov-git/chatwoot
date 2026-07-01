@@ -173,7 +173,8 @@
       "selling_inventory_rating": "Vente / inventaire / évaluation",
       "site_error": "Erreur du site",
       "promo_giveaway": "Code promo / tirage au sort",
-      "other": "Autre"
+      "other": "Autre",
+      "wheel": "Roue de la fortune"
     }
   }
 }

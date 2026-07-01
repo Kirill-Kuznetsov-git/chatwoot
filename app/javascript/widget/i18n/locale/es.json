@@ -173,7 +173,8 @@
       "selling_inventory_rating": "Venta / inventario / valoración",
       "site_error": "Error del sitio",
       "promo_giveaway": "Código promocional / sorteo",
-      "other": "Otro"
+      "other": "Otro",
+      "wheel": "Rueda de la fortuna"
     }
   }
 }

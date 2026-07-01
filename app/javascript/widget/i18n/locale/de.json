@@ -173,7 +173,8 @@
       "selling_inventory_rating": "Verkauf / Inventar / Bewertung",
       "site_error": "Seitenfehler",
       "promo_giveaway": "Promo-Code / Gewinnspiel",
-      "other": "Sonstiges"
+      "other": "Sonstiges",
+      "wheel": "Glücksrad"
     }
   }
 }

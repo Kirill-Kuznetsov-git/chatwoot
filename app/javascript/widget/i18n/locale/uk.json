@@ -173,7 +173,8 @@
       "selling_inventory_rating": "Продаж / інвентар / рейтинг",
       "site_error": "Помилка сайту",
       "promo_giveaway": "Промокод / розіграш",
-      "other": "Інше"
+      "other": "Інше",
+      "wheel": "Колесо фортуни"
     }
   }
 }
