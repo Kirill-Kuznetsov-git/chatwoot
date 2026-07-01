@@ -173,8 +173,11 @@
       "selling_inventory_rating": "Pagbebenta / imbentaryo / rating",
       "site_error": "Error sa site",
       "promo_giveaway": "Promo code / giveaway",
+      "old_site_withdrawal": "Withdrawal mula sa lumang site",
+      "cancel_withdrawal": "Kanselahin ang withdrawal",
       "other": "Iba pa",
-      "wheel": "Gulong ng Kapalaran"
+      "wheel": "Gulong ng Kapalaran",
+      "cvbots": "Delivery bots (CV)"
     }
   }
 }

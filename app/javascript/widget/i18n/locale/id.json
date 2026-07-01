@@ -173,8 +173,11 @@
       "selling_inventory_rating": "Penjualan / inventaris / rating",
       "site_error": "Kesalahan situs",
       "promo_giveaway": "Kode promo / giveaway",
+      "old_site_withdrawal": "Penarikan dari situs lama",
+      "cancel_withdrawal": "Batalkan penarikan",
       "other": "Lainnya",
-      "wheel": "Roda keberuntungan"
+      "wheel": "Roda keberuntungan",
+      "cvbots": "Bot pengiriman (CV)"
     }
   }
 }

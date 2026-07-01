@@ -173,8 +173,11 @@
       "selling_inventory_rating": "বিক্রয় / ইনভেন্টরি / রেটিং",
       "site_error": "সাইট ত্রুটি",
       "promo_giveaway": "প্রোমো কোড / গিভঅ্যাওয়ে",
+      "old_site_withdrawal": "পুরনো সাইট থেকে উত্তোলন",
+      "cancel_withdrawal": "উত্তোলন বাতিল",
       "other": "অন্যান্য",
-      "wheel": "ভাগ্যের চাকা"
+      "wheel": "ভাগ্যের চাকা",
+      "cvbots": "ডেলিভারি বট (CV)"
     }
   }
 }

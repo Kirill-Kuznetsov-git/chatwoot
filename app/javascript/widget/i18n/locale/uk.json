@@ -173,8 +173,11 @@
       "selling_inventory_rating": "Продаж / інвентар / рейтинг",
       "site_error": "Помилка сайту",
       "promo_giveaway": "Промокод / розіграш",
+      "old_site_withdrawal": "Виведення зі старого сайту",
+      "cancel_withdrawal": "Скасувати виведення",
       "other": "Інше",
-      "wheel": "Колесо фортуни"
+      "wheel": "Колесо фортуни",
+      "cvbots": "Боти доставки (CV)"
     }
   }
 }

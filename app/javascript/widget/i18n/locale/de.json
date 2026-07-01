@@ -173,8 +173,11 @@
       "selling_inventory_rating": "Verkauf / Inventar / Bewertung",
       "site_error": "Seitenfehler",
       "promo_giveaway": "Promo-Code / Gewinnspiel",
+      "old_site_withdrawal": "Auszahlung von der alten Seite",
+      "cancel_withdrawal": "Auszahlung stornieren",
       "other": "Sonstiges",
-      "wheel": "Glücksrad"
+      "wheel": "Glücksrad",
+      "cvbots": "Lieferbots (CV)"
     }
   }
 }

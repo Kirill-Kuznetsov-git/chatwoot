@@ -173,8 +173,11 @@
       "selling_inventory_rating": "فروخت / انوینٹری / ریٹنگ",
       "site_error": "سائٹ کی خرابی",
       "promo_giveaway": "پرومو کوڈ / گیو وے",
+      "old_site_withdrawal": "پرانی سائٹ سے رقم نکالنا",
+      "cancel_withdrawal": "رقم نکالنا منسوخ کریں",
       "other": "دیگر",
-      "wheel": "قسمت کا پہیہ"
+      "wheel": "قسمت کا پہیہ",
+      "cvbots": "ڈیلیوری بوٹس (CV)"
     }
   }
 }

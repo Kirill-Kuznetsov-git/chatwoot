@@ -173,8 +173,11 @@
       "selling_inventory_rating": "Vente / inventaire / évaluation",
       "site_error": "Erreur du site",
       "promo_giveaway": "Code promo / tirage au sort",
+      "old_site_withdrawal": "Retrait de l'ancien site",
+      "cancel_withdrawal": "Annuler le retrait",
       "other": "Autre",
-      "wheel": "Roue de la fortune"
+      "wheel": "Roue de la fortune",
+      "cvbots": "Bots de livraison (CV)"
     }
   }
 }

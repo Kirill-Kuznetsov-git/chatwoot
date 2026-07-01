@@ -173,8 +173,11 @@
       "selling_inventory_rating": "Satış / envanter / değerlendirme",
       "site_error": "Site hatası",
       "promo_giveaway": "Promosyon kodu / çekiliş",
+      "old_site_withdrawal": "Eski siteden para çekme",
+      "cancel_withdrawal": "Para çekmeyi iptal",
       "other": "Diğer",
-      "wheel": "Şans Çarkı"
+      "wheel": "Şans Çarkı",
+      "cvbots": "Teslimat botları (CV)"
     }
   }
 }

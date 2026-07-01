@@ -173,8 +173,11 @@
       "selling_inventory_rating": "Venta / inventario / valoración",
       "site_error": "Error del sitio",
       "promo_giveaway": "Código promocional / sorteo",
+      "old_site_withdrawal": "Retiro del sitio antiguo",
+      "cancel_withdrawal": "Cancelar retiro",
       "other": "Otro",
-      "wheel": "Rueda de la fortuna"
+      "wheel": "Rueda de la fortuna",
+      "cvbots": "Bots de entrega (CV)"
     }
   }
 }

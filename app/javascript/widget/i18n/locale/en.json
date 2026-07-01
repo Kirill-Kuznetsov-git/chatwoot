@@ -177,8 +177,11 @@
       "selling_inventory_rating": "Selling / inventory / rating",
       "site_error": "Site error",
       "promo_giveaway": "Promo code / giveaway",
+      "old_site_withdrawal": "Old-site withdrawal",
+      "cancel_withdrawal": "Cancel withdrawal",
       "other": "Other",
-      "wheel": "Wheel of Fortune"
+      "wheel": "Wheel of Fortune",
+      "cvbots": "Delivery bots (CV)"
     }
   }
 }

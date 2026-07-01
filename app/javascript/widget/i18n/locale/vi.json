@@ -173,8 +173,11 @@
       "selling_inventory_rating": "Bán / kho đồ / đánh giá",
       "site_error": "Lỗi trang web",
       "promo_giveaway": "Mã khuyến mãi / giveaway",
+      "old_site_withdrawal": "Rút tiền từ trang cũ",
+      "cancel_withdrawal": "Hủy rút tiền",
       "other": "Khác",
-      "wheel": "Vòng quay may mắn"
+      "wheel": "Vòng quay may mắn",
+      "cvbots": "Bot giao hàng (CV)"
     }
   }
 }
