@@ -162,5 +162,18 @@
   },
   "FOOTER_REPLY_TO": {
     "REPLY_TO": "Replying to:"
+  },
+  "CUSTOM_ATTRIBUTE_OPTIONS": {
+    "category": {
+      "payment": "পেমেন্ট / বিলিং",
+      "withdrawal": "উত্তোলন / উত্তোলন বাতিল",
+      "item_not_received": "আইটেম পাওয়া যায়নি",
+      "robux_gamepass_giftcard": "Robux / GamePass / Gift Card",
+      "account_roblox": "অ্যাকাউন্ট / Roblox",
+      "selling_inventory_rating": "বিক্রয় / ইনভেন্টরি / রেটিং",
+      "site_error": "সাইট ত্রুটি",
+      "promo_giveaway": "প্রোমো কোড / গিভঅ্যাওয়ে",
+      "other": "অন্যান্য"
+    }
   }
 }

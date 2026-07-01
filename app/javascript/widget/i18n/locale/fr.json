@@ -162,5 +162,18 @@
   },
   "FOOTER_REPLY_TO": {
     "REPLY_TO": "Répondre à:"
+  },
+  "CUSTOM_ATTRIBUTE_OPTIONS": {
+    "category": {
+      "payment": "Paiement / facturation",
+      "withdrawal": "Retrait / annuler le retrait",
+      "item_not_received": "Article non reçu",
+      "robux_gamepass_giftcard": "Robux / GamePass / Gift Card",
+      "account_roblox": "Compte / Roblox",
+      "selling_inventory_rating": "Vente / inventaire / évaluation",
+      "site_error": "Erreur du site",
+      "promo_giveaway": "Code promo / tirage au sort",
+      "other": "Autre"
+    }
   }
 }

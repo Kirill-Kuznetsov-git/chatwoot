@@ -162,5 +162,18 @@
   },
   "FOOTER_REPLY_TO": {
     "REPLY_TO": "Replying to:"
+  },
+  "CUSTOM_ATTRIBUTE_OPTIONS": {
+    "category": {
+      "payment": "Bayad / billing",
+      "withdrawal": "Withdrawal / kanselahin ang withdrawal",
+      "item_not_received": "Hindi natanggap na item",
+      "robux_gamepass_giftcard": "Robux / GamePass / Gift Card",
+      "account_roblox": "Account / Roblox",
+      "selling_inventory_rating": "Pagbebenta / imbentaryo / rating",
+      "site_error": "Error sa site",
+      "promo_giveaway": "Promo code / giveaway",
+      "other": "Iba pa"
+    }
   }
 }

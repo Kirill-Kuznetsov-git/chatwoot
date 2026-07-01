@@ -162,5 +162,18 @@
   },
   "FOOTER_REPLY_TO": {
     "REPLY_TO": "Відповісти:"
+  },
+  "CUSTOM_ATTRIBUTE_OPTIONS": {
+    "category": {
+      "payment": "Оплата / білінг",
+      "withdrawal": "Виведення / скасувати виведення",
+      "item_not_received": "Товар не отримано",
+      "robux_gamepass_giftcard": "Robux / GamePass / Gift Card",
+      "account_roblox": "Обліковий запис / Roblox",
+      "selling_inventory_rating": "Продаж / інвентар / рейтинг",
+      "site_error": "Помилка сайту",
+      "promo_giveaway": "Промокод / розіграш",
+      "other": "Інше"
+    }
   }
 }

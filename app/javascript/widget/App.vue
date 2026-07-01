@@ -23,6 +23,29 @@ import { useAvailability } from 'widget/composables/useAvailability';
 import { SDK_SET_BUBBLE_VISIBILITY } from '../shared/constants/sharedFrameEvents';
 import { emitter } from 'shared/helpers/mitt';
 
+// Persist the visitor's chosen widget language across reloads. The widget always
+// boots with account.locale, and the parent site only re-applies the locale on
+// some pages — so on reload the language would reset (e.g. tr -> en). We remember
+// the last explicitly-set locale and restore it on boot. localStorage may be
+// blocked in a cross-origin iframe, so both accessors fail safe.
+const LOCALE_STORAGE_KEY = 'cw-widget-locale';
+
+const getSavedLocale = () => {
+  try {
+    return window.localStorage.getItem(LOCALE_STORAGE_KEY);
+  } catch (error) {
+    return null;
+  }
+};
+
+const saveLocale = locale => {
+  try {
+    window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+  } catch (error) {
+    // localStorage unavailable (blocked third-party storage) — skip persistence.
+  }
+};
+
 export default {
   name: 'App',
   components: {
@@ -80,7 +103,10 @@ export default {
   },
   mounted() {
     const { websiteToken, locale, widgetColor } = window.chatwootWebChannel;
-    this.setLocale(locale);
+    // Restore the visitor's previously chosen language (if any); otherwise boot
+    // with the account default. This keeps the language across reloads even when
+    // the parent site doesn't re-apply setLocale.
+    this.setLocale(getSavedLocale() || locale);
     this.setWidgetColor(widgetColor);
     this.setWidgetColorVariable(widgetColor);
     setHeader(window.authToken);
@@ -143,7 +169,7 @@ export default {
         });
       });
     },
-    setLocale(rawLocale) {
+    setLocale(rawLocale, { persist = false } = {}) {
       if (!rawLocale) return;
       // StarPets platform codes → Chatwoot locale codes (часть — коды стран).
       const LOCALE_ALIASES = {
@@ -173,7 +199,12 @@ export default {
         this.$root.$i18n.locale = localeWithVariation;
       } else if (hasLocaleWithoutVariation) {
         this.$root.$i18n.locale = localeWithoutVariation;
+      } else {
+        return;
       }
+      // Remember only explicit locale changes (from the site), so a reload can
+      // restore them. The default account.locale boot is not persisted.
+      if (persist) saveLocale(this.$root.$i18n.locale);
     },
     registerUnreadEvents() {
       emitter.on(ON_AGENT_MESSAGE_RECEIVED, () => {
@@ -278,7 +309,7 @@ export default {
         }
         const message = IFrameHelper.getMessage(e);
         if (message.event === 'config-set') {
-          this.setLocale(message.locale);
+          this.setLocale(message.locale, { persist: true });
           this.setBubbleLabel();
           this.fetchOldConversations().then(() => this.setUnreadView());
           this.fetchAvailableAgents(websiteToken);
@@ -328,7 +359,7 @@ export default {
           );
         } else if (message.event === 'set-locale') {
           const previousLocale = this.$root.$i18n.locale;
-          this.setLocale(message.locale);
+          this.setLocale(message.locale, { persist: true });
           this.setBubbleLabel();
           // Persist the chosen language on the contact so outgoing
           // auto-translation targets the language the visitor reads the widget

@@ -162,5 +162,18 @@
   },
   "FOOTER_REPLY_TO": {
     "REPLY_TO": "Replying to:"
+  },
+  "CUSTOM_ATTRIBUTE_OPTIONS": {
+    "category": {
+      "payment": "Pembayaran / tagihan",
+      "withdrawal": "Penarikan / batalkan penarikan",
+      "item_not_received": "Barang tidak diterima",
+      "robux_gamepass_giftcard": "Robux / GamePass / Gift Card",
+      "account_roblox": "Akun / Roblox",
+      "selling_inventory_rating": "Penjualan / inventaris / rating",
+      "site_error": "Kesalahan situs",
+      "promo_giveaway": "Kode promo / giveaway",
+      "other": "Lainnya"
+    }
   }
 }
