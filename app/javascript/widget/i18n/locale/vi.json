@@ -9,7 +9,8 @@
       "category": "Danh mục",
       "phoneNumber": "Số điện thoại",
       "starpets_id": "Starpets ID",
-      "language": "Ngôn ngữ"
+      "language": "Ngôn ngữ",
+      "category_swap": "Danh mục"
     }
   },
   "COMPONENTS": {
@@ -178,6 +179,21 @@
       "other": "Khác",
       "wheel": "Vòng quay may mắn",
       "cvbots": "Bot giao hàng (CV)"
+    },
+    "category_swap": {
+      "godly": "Tôi muốn Godly / vật phẩm miễn phí",
+      "diamonds": "Tôi không biết cách nhận kim cương",
+      "promo": "Mã khuyến mãi của tôi không hoạt động",
+      "invite": "Lời mời bạn bè không được tính",
+      "invite_code": "Tôi không dùng được mã của bạn tôi",
+      "discord": "Sự cố nhiệm vụ Discord hoặc phần thưởng rank",
+      "verification": "Sự cố xác minh Roblox",
+      "claim": "Tôi không nhận được phần thưởng",
+      "inventory": "Vật phẩm hoặc thú cưng biến mất khỏi kho đồ",
+      "purchase": "Tôi đã mua vật phẩm nhưng chưa nhận được",
+      "account": "Mất quyền truy cập / liên kết sai tài khoản",
+      "safety": "Báo cáo lừa đảo hoặc an toàn",
+      "other": "Khác"
     }
   }
 }

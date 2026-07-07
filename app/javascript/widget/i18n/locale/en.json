@@ -9,7 +9,8 @@
       "category": "Category",
       "phoneNumber": "Phone number",
       "starpets_id": "Starpets ID",
-      "language": "Language"
+      "language": "Language",
+      "category_swap": "Category"
     }
   },
   "COMPONENTS": {
@@ -182,6 +183,21 @@
       "other": "Other",
       "wheel": "Wheel of Fortune",
       "cvbots": "Delivery bots (CV)"
+    },
+    "category_swap": {
+      "godly": "I want a Godly / free item",
+      "diamonds": "I don't know how to get diamonds",
+      "promo": "My promo code doesn't work",
+      "invite": "My friend invite didn't count",
+      "invite_code": "I can't use my friend's code",
+      "discord": "Discord task or rank reward issue",
+      "verification": "Roblox verification issue",
+      "claim": "I can't claim my prize",
+      "inventory": "My item or pet is missing from inventory",
+      "purchase": "I bought an item but didn't receive it",
+      "account": "I lost access / linked wrong account",
+      "safety": "Scam or safety report",
+      "other": "Other"
     }
   }
 }

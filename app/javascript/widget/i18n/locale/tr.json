@@ -9,7 +9,8 @@
       "category": "Kategori",
       "phoneNumber": "Telefon",
       "starpets_id": "Starpets ID",
-      "language": "Dil"
+      "language": "Dil",
+      "category_swap": "Kategori"
     }
   },
   "COMPONENTS": {
@@ -178,6 +179,21 @@
       "other": "Diğer",
       "wheel": "Şans Çarkı",
       "cvbots": "Teslimat botları (CV)"
+    },
+    "category_swap": {
+      "godly": "Godly / ücretsiz eşya istiyorum",
+      "diamonds": "Elmas nasıl alınır bilmiyorum",
+      "promo": "Promosyon kodum çalışmıyor",
+      "invite": "Arkadaş davetim sayılmadı",
+      "invite_code": "Arkadaşımın kodunu kullanamıyorum",
+      "discord": "Discord görevi veya rütbe ödülü sorunu",
+      "verification": "Roblox doğrulama sorunu",
+      "claim": "Ödülümü alamıyorum",
+      "inventory": "Eşyam veya evcil hayvanım envanterde yok",
+      "purchase": "Eşya satın aldım ama alamadım",
+      "account": "Erişimi kaybettim / yanlış hesap bağladım",
+      "safety": "Dolandırıcılık veya güvenlik bildirimi",
+      "other": "Diğer"
     }
   }
 }

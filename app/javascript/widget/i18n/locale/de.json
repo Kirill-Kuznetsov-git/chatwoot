@@ -9,7 +9,8 @@
       "category": "Kategorie",
       "phoneNumber": "Telefonnummer",
       "starpets_id": "Starpets ID",
-      "language": "Sprache"
+      "language": "Sprache",
+      "category_swap": "Kategorie"
     }
   },
   "COMPONENTS": {
@@ -178,6 +179,21 @@
       "other": "Sonstiges",
       "wheel": "Glücksrad",
       "cvbots": "Lieferbots (CV)"
+    },
+    "category_swap": {
+      "godly": "Ich möchte ein Godly / kostenloses Item",
+      "diamonds": "Ich weiß nicht, wie man Diamanten bekommt",
+      "promo": "Mein Promo-Code funktioniert nicht",
+      "invite": "Meine Freundeseinladung wurde nicht gezählt",
+      "invite_code": "Ich kann den Code meines Freundes nicht nutzen",
+      "discord": "Problem mit Discord-Aufgabe oder Rang-Belohnung",
+      "verification": "Problem mit der Roblox-Verifizierung",
+      "claim": "Ich kann meinen Preis nicht abholen",
+      "inventory": "Mein Item oder Haustier fehlt im Inventar",
+      "purchase": "Ich habe ein Item gekauft, aber nicht erhalten",
+      "account": "Zugriff verloren / falsches Konto verknüpft",
+      "safety": "Betrug oder Sicherheitsmeldung",
+      "other": "Sonstiges"
     }
   }
 }

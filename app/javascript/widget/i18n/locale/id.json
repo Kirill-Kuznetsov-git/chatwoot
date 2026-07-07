@@ -9,7 +9,8 @@
       "category": "Kategori",
       "phoneNumber": "Nomor telepon",
       "starpets_id": "Starpets ID",
-      "language": "Bahasa"
+      "language": "Bahasa",
+      "category_swap": "Kategori"
     }
   },
   "COMPONENTS": {
@@ -178,6 +179,21 @@
       "other": "Lainnya",
       "wheel": "Roda keberuntungan",
       "cvbots": "Bot pengiriman (CV)"
+    },
+    "category_swap": {
+      "godly": "Saya ingin Godly / item gratis",
+      "diamonds": "Saya tidak tahu cara mendapatkan berlian",
+      "promo": "Kode promo saya tidak berfungsi",
+      "invite": "Undangan teman saya tidak terhitung",
+      "invite_code": "Saya tidak bisa memakai kode teman saya",
+      "discord": "Masalah tugas Discord atau hadiah rank",
+      "verification": "Masalah verifikasi Roblox",
+      "claim": "Saya tidak bisa mengklaim hadiah saya",
+      "inventory": "Item atau pet saya hilang dari inventaris",
+      "purchase": "Saya membeli item tapi tidak menerimanya",
+      "account": "Kehilangan akses / akun yang salah tertaut",
+      "safety": "Laporan penipuan atau keamanan",
+      "other": "Lainnya"
     }
   }
 }

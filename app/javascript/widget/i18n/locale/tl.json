@@ -9,7 +9,8 @@
       "category": "Kategorya",
       "phoneNumber": "Numero ng telepono",
       "starpets_id": "Starpets ID",
-      "language": "Wika"
+      "language": "Wika",
+      "category_swap": "Kategorya"
     }
   },
   "COMPONENTS": {
@@ -178,6 +179,21 @@
       "other": "Iba pa",
       "wheel": "Gulong ng Kapalaran",
       "cvbots": "Delivery bots (CV)"
+    },
+    "category_swap": {
+      "godly": "Gusto ko ng Godly / libreng item",
+      "diamonds": "Hindi ko alam kung paano makakuha ng diamonds",
+      "promo": "Hindi gumagana ang promo code ko",
+      "invite": "Hindi nabilang ang invite ng kaibigan ko",
+      "invite_code": "Hindi ko magamit ang code ng kaibigan ko",
+      "discord": "Problema sa Discord task o rank reward",
+      "verification": "Problema sa Roblox verification",
+      "claim": "Hindi ko ma-claim ang premyo ko",
+      "inventory": "Nawawala ang item o pet ko sa inventory",
+      "purchase": "Bumili ako ng item pero hindi ko natanggap",
+      "account": "Nawalan ng access / maling account ang na-link",
+      "safety": "Ulat ng scam o kaligtasan",
+      "other": "Iba pa"
     }
   }
 }
