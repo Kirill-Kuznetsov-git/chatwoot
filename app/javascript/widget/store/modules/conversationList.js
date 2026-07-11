@@ -1,8 +1,4 @@
 import { getAllConversationsAPI } from 'widget/api/conversation';
-import {
-  L1_LABEL_PREFIX,
-  hasLabelWithPrefix,
-} from 'widget/constants/levels';
 
 const state = {
   records: [],
@@ -22,12 +18,10 @@ const isUnread = conv => {
 const getters = {
   getAll: $state => $state.records,
   isFetching: $state => $state.uiFlags.isFetching,
-  hasL1Conversation: $state =>
-    $state.records.some(
-      conv =>
-        ['open', 'pending'].includes(conv.status) &&
-        hasLabelWithPrefix(conv.labels, L1_LABEL_PREFIX)
-    ),
+  // Раньше блокировали только по l1*-лейблу, но после отказа от деления L1/L2
+  // эти лейблы больше не вешаются — блокируем при ЛЮБОЙ активной беседе.
+  hasActiveConversation: $state =>
+    $state.records.some(conv => ['open', 'pending'].includes(conv.status)),
   isConversationUnread: $state => conversationId =>
     isUnread($state.records.find(r => r.id === conversationId)),
   totalUnreadCount: $state => $state.records.filter(isUnread).length,
@@ -48,9 +42,9 @@ const actions = {
   // Patch the matching record with a freshly received message (from
   // ActionCable). If the record doesn't exist yet — e.g. a brand new
   // conversation was just created — fall back to a full refetch.
-  applyIncomingMessage({ commit, state, dispatch }, message) {
+  applyIncomingMessage({ commit, state: $state, dispatch }, message) {
     if (!message || !message.conversation_id) return;
-    const conv = state.records.find(r => r.id === message.conversation_id);
+    const conv = $state.records.find(r => r.id === message.conversation_id);
     if (!conv) {
       dispatch('fetchAll');
       return;

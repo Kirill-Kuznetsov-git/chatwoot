@@ -20,7 +20,7 @@ export default {
   computed: {
     ...mapGetters({
       records: 'conversationList/getAll',
-      hasL1: 'conversationList/hasL1Conversation',
+      hasActiveConversation: 'conversationList/hasActiveConversation',
       widgetColor: 'appConfig/getWidgetColor',
     }),
     sortedRecords() {
@@ -34,7 +34,7 @@ export default {
       });
     },
     canStartNew() {
-      return !this.hasL1;
+      return !this.hasActiveConversation;
     },
   },
   mounted() {
