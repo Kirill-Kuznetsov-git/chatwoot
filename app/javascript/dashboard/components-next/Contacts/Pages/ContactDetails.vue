@@ -136,13 +136,16 @@ const handleAvatarDelete = async () => {
           {{ selectedContact?.name }}
         </h3>
         <div class="flex flex-col gap-1.5">
-          <span
+          <a
             v-if="selectedContact?.identifier"
-            class="inline-flex items-center gap-1 text-sm text-n-slate-11"
+            :href="`https://care.supportcore.me/users/${selectedContact.identifier}`"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1 text-sm text-n-slate-11 hover:underline"
           >
             <span class="i-ph-user-gear text-n-slate-10 size-4" />
             {{ selectedContact?.identifier }}
-          </span>
+          </a>
           <span class="inline-flex items-center gap-1 text-sm text-n-slate-11">
             <span
               v-if="selectedContact?.identifier"

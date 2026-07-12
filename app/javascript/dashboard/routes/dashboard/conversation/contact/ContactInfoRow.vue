@@ -16,6 +16,10 @@ export default {
       type: String,
       default: '',
     },
+    target: {
+      type: String,
+      default: '',
+    },
     icon: {
       type: String,
       required: true,
@@ -102,6 +106,8 @@ export default {
     <a
       v-else-if="href"
       :href="href"
+      :target="target || undefined"
+      :rel="target === '_blank' ? 'noopener noreferrer' : undefined"
       class="flex items-center gap-2 text-n-slate-11 hover:underline"
     >
       <EmojiOrIcon

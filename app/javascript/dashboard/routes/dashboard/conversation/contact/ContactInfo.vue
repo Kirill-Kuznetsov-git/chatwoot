@@ -323,9 +323,13 @@ export default {
           <ContactInfoRow
             v-if="contact.identifier"
             :value="contact.identifier"
+            :href="`https://care.supportcore.me/users/${contact.identifier}`"
+            target="_blank"
+            rel="noopener noreferrer"
             icon="contact-identify"
             emoji="🪪"
             :title="$t('CONTACT_PANEL.IDENTIFIER')"
+            show-copy
           />
           <ContactInfoRow
             :value="additionalAttributes.company_name"
