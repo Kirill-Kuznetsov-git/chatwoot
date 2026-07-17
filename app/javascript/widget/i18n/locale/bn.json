@@ -178,7 +178,8 @@
       "cancel_withdrawal": "উত্তোলন বাতিল",
       "other": "অন্যান্য",
       "wheel": "ভাগ্যের চাকা",
-      "cvbots": "ডেলিভারি বট (CV)"
+      "cvbots": "ডেলিভারি বট (CV)",
+      "item_lost": "আইটেম হারিয়ে গেছে"
     },
     "category_swap": {
       "godly": "আমি Godly / ফ্রি আইটেম চাই",

@@ -178,7 +178,8 @@
       "cancel_withdrawal": "Cancelar saque",
       "other": "Outro",
       "wheel": "Roda da fortuna",
-      "cvbots": "Bots de entrega (CV)"
+      "cvbots": "Bots de entrega (CV)",
+      "item_lost": "Item desaparecido"
     },
     "category_swap": {
       "godly": "Quero um Godly / item grátis",

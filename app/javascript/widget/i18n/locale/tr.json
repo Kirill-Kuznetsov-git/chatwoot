@@ -178,7 +178,8 @@
       "cancel_withdrawal": "Para çekmeyi iptal",
       "other": "Diğer",
       "wheel": "Şans Çarkı",
-      "cvbots": "Teslimat botları (CV)"
+      "cvbots": "Teslimat botları (CV)",
+      "item_lost": "Eşya kayboldu"
     },
     "category_swap": {
       "godly": "Godly / ücretsiz eşya istiyorum",

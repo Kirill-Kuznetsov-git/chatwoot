@@ -182,7 +182,8 @@
       "cancel_withdrawal": "Отмена выплаты",
       "other": "Другое",
       "wheel": "Колесо фортуны",
-      "cvbots": "Боты доставки (CV)"
+      "cvbots": "Боты доставки (CV)",
+      "item_lost": "Пропал предмет"
     },
     "category_swap": {
       "godly": "Хочу Godly / бесплатный предмет",

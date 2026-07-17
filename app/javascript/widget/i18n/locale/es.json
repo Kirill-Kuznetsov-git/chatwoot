@@ -178,7 +178,8 @@
       "cancel_withdrawal": "Cancelar retiro",
       "other": "Otro",
       "wheel": "Rueda de la fortuna",
-      "cvbots": "Bots de entrega (CV)"
+      "cvbots": "Bots de entrega (CV)",
+      "item_lost": "Objeto desaparecido"
     },
     "category_swap": {
       "godly": "Quiero un Godly / objeto gratis",

@@ -178,7 +178,8 @@
       "cancel_withdrawal": "Annulla prelievo",
       "other": "Altro",
       "wheel": "Ruota della fortuna",
-      "cvbots": "Bot di consegna (CV)"
+      "cvbots": "Bot di consegna (CV)",
+      "item_lost": "Oggetto scomparso"
     },
     "category_swap": {
       "godly": "Voglio un Godly / oggetto gratis",

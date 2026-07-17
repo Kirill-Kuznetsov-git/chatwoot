@@ -178,7 +178,8 @@
       "cancel_withdrawal": "Скасувати виведення",
       "other": "Інше",
       "wheel": "Колесо фортуни",
-      "cvbots": "Боти доставки (CV)"
+      "cvbots": "Боти доставки (CV)",
+      "item_lost": "Зник предмет"
     },
     "category_swap": {
       "godly": "Хочу Godly / безкоштовний предмет",

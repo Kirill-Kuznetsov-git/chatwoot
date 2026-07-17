@@ -178,7 +178,8 @@
       "cancel_withdrawal": "رقم نکالنا منسوخ کریں",
       "other": "دیگر",
       "wheel": "قسمت کا پہیہ",
-      "cvbots": "ڈیلیوری بوٹس (CV)"
+      "cvbots": "ڈیلیوری بوٹس (CV)",
+      "item_lost": "آئٹم غائب ہو گیا"
     },
     "category_swap": {
       "godly": "مجھے Godly / مفت آئٹم چاہیے",

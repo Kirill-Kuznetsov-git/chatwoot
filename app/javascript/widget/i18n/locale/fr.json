@@ -178,7 +178,8 @@
       "cancel_withdrawal": "Annuler le retrait",
       "other": "Autre",
       "wheel": "Roue de la fortune",
-      "cvbots": "Bots de livraison (CV)"
+      "cvbots": "Bots de livraison (CV)",
+      "item_lost": "Objet disparu"
     },
     "category_swap": {
       "godly": "Je veux un Godly / objet gratuit",

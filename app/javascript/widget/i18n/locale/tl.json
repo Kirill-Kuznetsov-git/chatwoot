@@ -178,7 +178,8 @@
       "cancel_withdrawal": "Kanselahin ang withdrawal",
       "other": "Iba pa",
       "wheel": "Gulong ng Kapalaran",
-      "cvbots": "Delivery bots (CV)"
+      "cvbots": "Delivery bots (CV)",
+      "item_lost": "Nawala ang item"
     },
     "category_swap": {
       "godly": "Gusto ko ng Godly / libreng item",

@@ -178,7 +178,8 @@
       "cancel_withdrawal": "Hủy rút tiền",
       "other": "Khác",
       "wheel": "Vòng quay may mắn",
-      "cvbots": "Bot giao hàng (CV)"
+      "cvbots": "Bot giao hàng (CV)",
+      "item_lost": "Vật phẩm bị mất"
     },
     "category_swap": {
       "godly": "Tôi muốn Godly / vật phẩm miễn phí",
