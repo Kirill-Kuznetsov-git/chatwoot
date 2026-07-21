@@ -6,6 +6,12 @@
 class AutoTranslateJob < ApplicationJob
   queue_as :medium
 
+  # Retry transient OpenAI failures (rate limit / 5xx / network); after attempts
+  # are exhausted, give up quietly (the dashboard falls back to the original).
+  retry_on Integrations::Openai::TranslateService::TransientError, wait: :polynomially_longer, attempts: 5 do |_job, error|
+    Rails.logger.error("[AutoTranslate] gave up after retries: #{error.message}")
+  end
+
   def perform(message_id)
     message = Message.find_by(id: message_id)
     return if message.nil?

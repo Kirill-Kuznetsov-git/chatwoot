@@ -1,12 +1,16 @@
 # Translates arbitrary text into a target language using the same ruby_llm /
 # OpenAI stack as the Captain/AI-Assist features. Reuses the account's OpenAI
 # integration api_key (falls back to the installation-level Captain key).
-# Returns the translated string, or nil on any failure (callers must fall back
-# to the original text — translation must never drop a message).
+# Returns the translated string, or nil on a PERMANENT failure (callers fall
+# back to the original text — translation must never drop a message). Transient
+# failures (rate limit, 5xx, network) raise TransientError so the job retries.
 class Integrations::Openai::TranslateService
   pattr_initialize [:account!, :content!, :target_language!]
 
   MODEL = ENV.fetch('AUTO_TRANSLATE_MODEL', Llm::Config::DEFAULT_MODEL)
+
+  # Raised on transient upstream failures so the enqueuing job can retry.
+  TransientError = Class.new(StandardError)
 
   def perform
     return if content.blank? || target_language.blank?
@@ -17,6 +21,10 @@ class Integrations::Openai::TranslateService
       chat.with_instructions(system_prompt)
       chat.ask(content).content
     end
+  rescue RubyLLM::RateLimitError, RubyLLM::ServerError, RubyLLM::ServiceUnavailableError,
+         RubyLLM::OverloadedError, Faraday::TimeoutError, Faraday::ConnectionFailed => e
+    Rails.logger.warn("[OpenaiTranslate] transient #{e.class}: #{e.message} — retrying")
+    raise TransientError, "#{e.class}: #{e.message}"
   rescue StandardError => e
     Rails.logger.error("[OpenaiTranslate] #{e.class}: #{e.message}")
     nil
