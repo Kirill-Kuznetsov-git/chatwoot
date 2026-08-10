@@ -44,12 +44,15 @@ LANGUAGES_CONFIG = {
   39 => { name: 'Српски (sr)', iso_639_3_code: 'srp', iso_639_1_code: 'sr', enabled: true },
   40 => { name: 'български (bg)', iso_639_3_code: 'bul', iso_639_1_code: 'bg', enabled: true },
   41 => { name: 'Eesti keel (et)', iso_639_3_code: 'est', iso_639_1_code: 'et', enabled: true },
+  42 => { name: 'Oʻzbekcha (uz)', iso_639_3_code: 'uzb', iso_639_1_code: 'uz', enabled: true },
   # StarPets audience languages — widget translations exist under
   # app/javascript/widget/i18n/locale/{bn,tl,ur}.json; register the locales so
   # the widget's setLocale accepts them (otherwise they fall back to en).
-  42 => { name: 'বাংলা (bn)', iso_639_3_code: 'ben', iso_639_1_code: 'bn', enabled: true },
-  43 => { name: 'Tagalog (tl)', iso_639_3_code: 'tgl', iso_639_1_code: 'tl', enabled: true },
-  44 => { name: 'اردو (ur)', iso_639_3_code: 'urd', iso_639_1_code: 'ur', enabled: true }
+  # Индексы сдвинуты на 43-45: апстрим занял 42 под uz. Это безопасно — в accounts.locale
+  # используется только значение 10, у portals колонки locale нет.
+  43 => { name: 'বাংলা (bn)', iso_639_3_code: 'ben', iso_639_1_code: 'bn', enabled: true },
+  44 => { name: 'Tagalog (tl)', iso_639_3_code: 'tgl', iso_639_1_code: 'tl', enabled: true },
+  45 => { name: 'اردو (ur)', iso_639_3_code: 'urd', iso_639_1_code: 'ur', enabled: true }
 }.filter { |_key, val| val[:enabled] }.freeze
 
 Rails.configuration.i18n.available_locales = LANGUAGES_CONFIG.map { |_index, lang| lang[:iso_639_1_code].to_sym }
