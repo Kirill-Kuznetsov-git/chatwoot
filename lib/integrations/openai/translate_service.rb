@@ -9,6 +9,21 @@ class Integrations::Openai::TranslateService
 
   MODEL = ENV.fetch('AUTO_TRANSLATE_MODEL', Llm::Config::DEFAULT_MODEL)
 
+  # Названия языков для промпта: модели приходит имя, а не код локали. Список —
+  # локали интерфейса Chatwoot; незнакомый код уходит как есть.
+  LANGUAGE_NAMES = {
+    'ar' => 'Arabic', 'ca' => 'Catalan', 'cs' => 'Czech', 'da' => 'Danish',
+    'de' => 'German', 'el' => 'Greek', 'en' => 'English', 'es' => 'Spanish',
+    'fa' => 'Persian', 'fi' => 'Finnish', 'fr' => 'French', 'he' => 'Hebrew',
+    'hi' => 'Hindi', 'hu' => 'Hungarian', 'id' => 'Indonesian', 'it' => 'Italian',
+    'ja' => 'Japanese', 'ko' => 'Korean', 'lt' => 'Lithuanian', 'lv' => 'Latvian',
+    'ml' => 'Malayalam', 'nl' => 'Dutch', 'no' => 'Norwegian', 'pl' => 'Polish',
+    'pt' => 'Portuguese', 'pt_BR' => 'Brazilian Portuguese', 'ro' => 'Romanian',
+    'ru' => 'Russian', 'sk' => 'Slovak', 'sv' => 'Swedish', 'ta' => 'Tamil',
+    'th' => 'Thai', 'tr' => 'Turkish', 'uk' => 'Ukrainian', 'vi' => 'Vietnamese',
+    'zh' => 'Chinese', 'zh_CN' => 'Simplified Chinese', 'zh_TW' => 'Traditional Chinese'
+  }.freeze
+
   # Raised on transient upstream failures so the enqueuing job can retry.
   TransientError = Class.new(StandardError)
 
@@ -32,12 +47,23 @@ class Integrations::Openai::TranslateService
 
   private
 
+  # Сообщение уже на языке оператора — обычный случай, а не исключение: оператор
+  # и клиент часто пишут на одном языке. Прежняя формулировка «translate into X»
+  # в этом случае заставляла модель перевести хоть куда-нибудь, и русское
+  # «работа» превращалось в английское «work». Поэтому язык называется словом, а
+  # совпадение языков описано явно как «верни без изменений».
   def system_prompt
-    "You are a professional translator for a customer-support chat. " \
-      "Translate the user's message into #{target_language}. " \
-      "Preserve meaning, tone, emoji, markdown, URLs and placeholders. " \
-      "Do NOT translate usernames, order IDs or code. " \
-      'Output ONLY the translation — no preamble, no quotes, no notes.'
+    "You translate customer-support messages into #{language_name} and into no other " \
+      "language. If the message is already written in #{language_name}, output it back " \
+      'completely unchanged, character for character, and translate nothing. Otherwise ' \
+      "output its #{language_name} translation. " \
+      'Preserve meaning, tone, emoji, markdown, URLs and placeholders. ' \
+      'Do NOT translate usernames, order IDs or code. ' \
+      'Output ONLY the resulting text — no preamble, no quotes, no notes.'
+  end
+
+  def language_name
+    LANGUAGE_NAMES[target_language.to_s] || target_language
   end
 
   def api_key
