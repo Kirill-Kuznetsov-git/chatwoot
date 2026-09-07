@@ -20,6 +20,7 @@ namespace :care do
     raise 'Care::SegmentSync выключен (CARE_SEGMENT_SYNC_ENABLED/CARE_API_URL/CARE_SERVICE_KEY)' unless Care::SegmentSync.enabled?
 
     account = Account.find(args[:account_id])
+    $stdout.sync = true # на detached-дино stdout буферизуется — без этого прогресс виден только в конце
     logger = ActiveSupport::Logger.new($stdout)
     result = Care::SegmentBackfill.new(
       account: account,
