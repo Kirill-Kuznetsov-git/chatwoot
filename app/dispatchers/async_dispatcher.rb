@@ -13,6 +13,7 @@ class AsyncDispatcher < BaseDispatcher
       AutomationRuleListener.instance,
       AutoTranslateListener.instance,
       CampaignListener.instance,
+      CareSegmentListener.instance,
       CsatSurveyListener.instance,
       HookListener.instance,
       InstallationWebhookListener.instance,
