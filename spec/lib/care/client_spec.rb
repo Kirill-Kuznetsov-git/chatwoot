@@ -62,4 +62,18 @@ describe Care::Client do
       expect { client.valuable_user_ids }.to raise_error(Care::Client::Error, /unexpected body/)
     end
   end
+
+  describe '#changed_user_ids' do
+    it 'passes since as ISO-8601 UTC and pages by after_id' do
+      since = Time.zone.parse('2026-09-07T01:00:00+03:00')
+      stub = stub_request(:get, 'https://care.test/api/segments/changed')
+             .with(query: { since: '2026-09-06T22:00:00Z', limit: '2', after_id: 'b' * 24 })
+             .to_return(status: 200, body: { user_ids: ['c' * 24], next_after_id: nil, total: 3 }.to_json,
+                        headers: { 'Content-Type' => 'application/json' })
+
+      page = client.changed_user_ids(since: since, after_id: 'b' * 24, limit: 2)
+      expect(page['user_ids']).to eq(['c' * 24])
+      expect(stub).to have_been_requested.once
+    end
+  end
 end

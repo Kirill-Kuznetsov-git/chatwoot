@@ -22,6 +22,17 @@ class Care::Client
     body
   end
 
+  # Страница user_id, чей сегмент изменился в Care с момента since (после ночного пересчёта).
+  # => { 'user_ids' => [...], 'next_after_id' => String|nil, 'total' => Integer, 'since' => String }
+  def changed_user_ids(since:, after_id: nil, limit: 1000)
+    query = { since: since.utc.iso8601, limit: limit }
+    query[:after_id] = after_id if after_id.present?
+    body = get('/api/segments/changed', query: query)
+    raise Error, 'care: unexpected body' unless body['user_ids'].is_a?(Array)
+
+    body
+  end
+
   # Страница user_id ценных пользователей (киты и Big за 90 дней) для бэкфилла.
   # => { 'user_ids' => [...], 'next_after_id' => String|nil, 'total' => Integer, 'criteria' => {...} }
   def valuable_user_ids(after_id: nil, limit: 1000)
