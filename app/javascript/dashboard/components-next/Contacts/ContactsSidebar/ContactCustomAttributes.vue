@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useMapGetter } from 'dashboard/composables/store';
 import { useUISettings } from 'dashboard/composables/useUISettings';
+import { visibleCustomAttributes } from 'dashboard/helper/customAttributeVisibility';
 
 import ContactCustomAttributeItem from 'dashboard/components-next/Contacts/ContactsSidebar/ContactCustomAttributeItem.vue';
 
@@ -19,7 +20,11 @@ const { uiSettings } = useUISettings();
 
 const searchQuery = ref('');
 
-const contactAttributes = useMapGetter('attributes/getContactAttributes') || [];
+const allContactAttributes = useMapGetter('attributes/getContactAttributes');
+// служебные атрибуты с пометкой [hidden] в описании операторам не показываем
+const contactAttributes = computed(() =>
+  visibleCustomAttributes(allContactAttributes.value)
+);
 
 const hasContactAttributes = computed(
   () => contactAttributes.value?.length > 0

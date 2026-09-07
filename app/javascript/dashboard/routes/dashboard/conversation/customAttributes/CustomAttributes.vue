@@ -8,6 +8,7 @@ import { useAlert } from 'dashboard/composables';
 import { useI18n } from 'vue-i18n';
 import { useUISettings } from 'dashboard/composables/useUISettings';
 import { copyTextToClipboard } from 'shared/helpers/clipboard';
+import { visibleCustomAttributes } from 'dashboard/helper/customAttributeVisibility';
 import CustomAttribute from 'dashboard/components/CustomAttribute.vue';
 import NextButton from 'dashboard/components-next/button/Button.vue';
 
@@ -44,8 +45,11 @@ const dragging = ref(false);
 const [showAllAttributes, toggleShowAllAttributes] = useToggle(false);
 
 const currentChat = computed(() => getters.getSelectedChat.value);
+// служебные атрибуты с пометкой [hidden] в описании операторам не показываем
 const attributes = computed(() =>
-  getters['attributes/getAttributesByModel'].value(props.attributeType)
+  visibleCustomAttributes(
+    getters['attributes/getAttributesByModel'].value(props.attributeType)
+  )
 );
 
 const contactIdentifier = computed(
