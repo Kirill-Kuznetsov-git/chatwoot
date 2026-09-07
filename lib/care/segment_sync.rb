@@ -48,6 +48,11 @@ module Care::SegmentSync
     }
   end
 
+  # Полный цикл для одного контакта: сходить в Care и записать. Клиент подменяется в бэкфилле/тестах.
+  def self.sync_contact!(contact, client: Care::Client.new)
+    apply!(contact, attributes_for(client.segment(contact.identifier)))
+  end
+
   # Пишет атрибуты. Если значения не изменились — только тихо обновляет метку времени
   # (update_columns, без событий), чтобы не гонять ActionCable и вебхуки на каждое обращение.
   # Возвращает true, если сегмент реально изменился.

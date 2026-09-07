@@ -16,18 +16,36 @@ class Care::Client
 
   # => Hash с role/weight/tier_90d/label/priority_rank/source (см. Care segments_service.to_response)
   def segment(user_id)
+    body = get("/api/users/#{user_id}/segment")
+    raise Error, 'care: unexpected body' unless body['role'].present? && body['weight'].present?
+
+    body
+  end
+
+  # Страница user_id ценных пользователей (киты и Big за 90 дней) для бэкфилла.
+  # => { 'user_ids' => [...], 'next_after_id' => String|nil, 'total' => Integer, 'criteria' => {...} }
+  def valuable_user_ids(after_id: nil, limit: 1000)
+    query = { limit: limit }
+    query[:after_id] = after_id if after_id.present?
+    body = get('/api/segments/valuable', query: query)
+    raise Error, 'care: unexpected body' unless body['user_ids'].is_a?(Array)
+
+    body
+  end
+
+  private
+
+  def get(path, query: nil)
     response = HTTParty.get(
-      "#{@base_url}/api/users/#{user_id}/segment",
+      "#{@base_url}#{path}",
       headers: { 'Authorization' => "Bearer #{@key}", 'Accept' => 'application/json' },
-      timeout: TIMEOUT_SECONDS
+      query: query, timeout: TIMEOUT_SECONDS
     )
     handle(response)
   rescue Net::OpenTimeout, Net::ReadTimeout, Errno::ECONNREFUSED, Errno::ECONNRESET, Errno::EHOSTUNREACH, SocketError,
          OpenSSL::SSL::SSLError, HTTParty::Error => e
     raise Unavailable, "care: #{e.class}"
   end
-
-  private
 
   def handle(response)
     case response.code
@@ -41,7 +59,7 @@ class Care::Client
   def parse(response)
     body = response.parsed_response
     body = JSON.parse(response.body) unless body.is_a?(Hash)
-    raise Error, 'care: unexpected body' unless body.is_a?(Hash) && body['role'].present? && body['weight'].present?
+    raise Error, 'care: unexpected body' unless body.is_a?(Hash)
 
     body
   rescue JSON::ParserError

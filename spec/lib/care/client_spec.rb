@@ -34,4 +34,32 @@ describe Care::Client do
     stub_request(:get, url).to_timeout
     expect { client.segment(user_id) }.to raise_error(Care::Client::Unavailable)
   end
+
+  describe '#valuable_user_ids' do
+    let(:vurl) { 'https://care.test/api/segments/valuable' }
+
+    it 'pages through valuable ids with after_id' do
+      first = stub_request(:get, vurl).with(query: { limit: '2' })
+                                      .to_return(status: 200, body: { user_ids: ['a' * 24, 'b' * 24], next_after_id: 'b' * 24,
+                                                                      total: 3, criteria: {} }.to_json,
+                                                 headers: { 'Content-Type' => 'application/json' })
+      second = stub_request(:get, vurl).with(query: { limit: '2', after_id: 'b' * 24 })
+                                       .to_return(status: 200, body: { user_ids: ['c' * 24], next_after_id: nil, total: 3 }.to_json,
+                                                  headers: { 'Content-Type' => 'application/json' })
+
+      page1 = client.valuable_user_ids(limit: 2)
+      expect(page1['user_ids']).to eq(['a' * 24, 'b' * 24])
+      page2 = client.valuable_user_ids(after_id: page1['next_after_id'], limit: 2)
+      expect(page2['user_ids']).to eq(['c' * 24])
+      expect(page2['next_after_id']).to be_nil
+      expect(first).to have_been_requested.once
+      expect(second).to have_been_requested.once
+    end
+
+    it 'rejects a body without user_ids' do
+      stub_request(:get, vurl).with(query: hash_including({}))
+                              .to_return(status: 200, body: '{"status":"ok"}', headers: { 'Content-Type' => 'application/json' })
+      expect { client.valuable_user_ids }.to raise_error(Care::Client::Error, /unexpected body/)
+    end
+  end
 end

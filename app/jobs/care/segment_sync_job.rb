@@ -19,7 +19,6 @@ class Care::SegmentSyncJob < ApplicationJob
     return unless Care::SegmentSync.identifier_valid?(contact.identifier)
     return if !force && Care::SegmentSync.fresh?(contact)
 
-    segment = Care::Client.new.segment(contact.identifier)
-    Care::SegmentSync.apply!(contact, Care::SegmentSync.attributes_for(segment))
+    Care::SegmentSync.sync_contact!(contact)
   end
 end
