@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_07_18_000000) do
+ActiveRecord::Schema[7.1].define(version: 2026_09_08_000000) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -491,6 +491,42 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_18_000000) do
     t.index ["assistant_id", "enabled"], name: "index_captain_scenarios_on_assistant_id_and_enabled"
     t.index ["assistant_id"], name: "index_captain_scenarios_on_assistant_id"
     t.index ["enabled"], name: "index_captain_scenarios_on_enabled"
+  end
+
+  create_table "care_sla_trackers", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "conversation_id", null: false
+    t.bigint "contact_id", null: false
+    t.string "class_key", null: false
+    t.string "class_name", null: false
+    t.integer "config_version", default: 0, null: false
+    t.datetime "started_at", null: false
+    t.datetime "reopened_at"
+    t.datetime "first_response_at"
+    t.datetime "resolved_at"
+    t.datetime "nr_anchor_at"
+    t.datetime "fr_due_at"
+    t.datetime "nr_due_at"
+    t.datetime "res_due_at"
+    t.string "fr_state", default: "none", null: false
+    t.string "nr_state", default: "none", null: false
+    t.string "res_state", default: "none", null: false
+    t.datetime "fr_breached_at"
+    t.datetime "nr_breached_at"
+    t.datetime "nr_breached_anchor_at"
+    t.datetime "res_breached_at"
+    t.string "priority_applied"
+    t.boolean "priority_manual", default: false, null: false
+    t.jsonb "labels_applied", default: [], null: false
+    t.boolean "active", default: true, null: false
+    t.string "closed_reason"
+    t.datetime "closed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "active"], name: "index_care_sla_trackers_on_account_id_and_active"
+    t.index ["account_id", "started_at"], name: "index_care_sla_trackers_on_account_id_and_started_at"
+    t.index ["contact_id"], name: "index_care_sla_trackers_on_contact_id"
+    t.index ["conversation_id"], name: "index_care_sla_trackers_on_conversation_id", unique: true
   end
 
   create_table "categories", force: :cascade do |t|

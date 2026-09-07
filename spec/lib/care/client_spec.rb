@@ -35,6 +35,21 @@ describe Care::Client do
     expect { client.segment(user_id) }.to raise_error(Care::Client::Unavailable)
   end
 
+  describe '#queue_config' do
+    let(:qurl) { 'https://care.test/api/segments/queue-config' }
+
+    it 'returns settings with classes and the version, and rejects a body without them' do
+      payload = { settings: { classes: [{ key: 'vip' }], risk_share: 0.8 }, version: 4, updated_at: nil, updated_by: nil }
+      stub_request(:get, qurl).with(headers: { 'Authorization' => 'Bearer svc_key' })
+                              .to_return(status: 200, body: payload.to_json, headers: { 'Content-Type' => 'application/json' })
+      expect(client.queue_config).to include('version' => 4)
+      expect(client.queue_config['settings']['classes'].first['key']).to eq('vip')
+
+      stub_request(:get, qurl).to_return(status: 200, body: '{"settings":{}}', headers: { 'Content-Type' => 'application/json' })
+      expect { client.queue_config }.to raise_error(Care::Client::Error, /unexpected body/)
+    end
+  end
+
   describe '#valuable_user_ids' do
     let(:vurl) { 'https://care.test/api/segments/valuable' }
 

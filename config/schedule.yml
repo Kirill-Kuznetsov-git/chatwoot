@@ -81,3 +81,16 @@ care_segment_resync_changed_job:
   cron: '30 3 * * *'
   class: 'Care::SegmentResyncChangedJob'
   queue: low
+
+# Support Care (SCC-102): SLA-трекеры диалогов ценных клиентов — пересчёт состояний по конфигу Care,
+# приоритеты/лейблы, алерты о просрочках. Один тик за раз (блокировка в Redis).
+care_sla_tick_job:
+  cron: '* * * * *'
+  class: 'Care::Sla::TickJob'
+  queue: default
+
+# Дайджест по SLA раз в сутки; час отправки берётся из конфига Care (digest_hour_utc), поэтому проверяем каждый час.
+care_sla_digest_job:
+  cron: '5 * * * *'
+  class: 'Care::Sla::DigestJob'
+  queue: low

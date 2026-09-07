@@ -1,5 +1,5 @@
-# Обслуживание интеграции с Support Care (сегменты пользователей, SCC-100).
-namespace :care do
+# Обслуживание интеграции с Support Care (сегменты пользователей SCC-100, очереди и SLA SCC-102).
+namespace :care do # rubocop:disable Metrics/BlockLength
   desc 'Создать определения атрибутов сегмента на контакте (идемпотентно): rails care:segment_attribute_definitions[ACCOUNT_ID]'
   task :segment_attribute_definitions, [:account_id] => :environment do |_t, args|
     account = Account.find(args[:account_id])
@@ -30,5 +30,58 @@ namespace :care do
       logger: logger
     ).run(after_id: args[:after_id].presence)
     puts "done: #{result.to_h}"
+  end
+
+  desc 'Показать действующий конфиг очередей/SLA (источник, версия, классы): rails care:queue_config'
+  task queue_config: :environment do
+    Care::Queue::Config.invalidate!
+    config = Care::Queue::Config.current
+    puts "source=#{config.source} version=#{config.version} queue=#{config.queue_enabled} sla_labels=#{config.sla_labels_enabled} " \
+         "alerts=#{config.alerts_enabled} digest=#{config.digest_enabled}@#{config.digest_hour_utc}h risk_share=#{config.risk_share}"
+    config.classes.each do |klass|
+      puts "  #{klass.key} (#{klass.name}): weights=#{klass.weights} tiers=#{klass.tiers} priority=#{klass.chatwoot_priority} " \
+           "labels=#{klass.labels} sla=#{klass.sla_enabled} fr=#{klass.first_response_minutes} nr=#{klass.next_response_minutes} " \
+           "res=#{klass.resolution_minutes} alert=#{klass.alert_on_breach} escalate=#{klass.escalate_priority_on_breach}"
+    end
+  end
+
+  desc 'Бэкфилл очереди: трекеры и приоритеты открытым диалогам ценных клиентов: rails care:queue_backfill_open'
+  task queue_backfill_open: :environment do
+    raise 'Care::SegmentSync выключен' unless Care::SegmentSync.enabled?
+
+    $stdout.sync = true
+    config = Care::Queue::Config.current
+    total = 0
+    20.times do
+      count = Care::Queue::Sweep.new(config: config, limit: 500).call
+      total += count
+      puts "swept #{count} (total #{total})"
+      break if count.zero?
+    end
+    puts "done: #{total} трекеров, активных сейчас #{Care::SlaTracker.active.count}"
+  end
+
+  desc 'Один тик SLA вручную: rails care:sla_tick'
+  task sla_tick: :environment do
+    puts Care::Sla::TickJob.perform_now.inspect
+  end
+
+  desc 'Дайджест SLA за дату (UTC, по умолчанию вчера), без проверки часа и дедупа: rails "care:sla_digest[2026-09-08]"'
+  task :sla_digest, [:date] => :environment do |_t, args|
+    puts Care::Sla::DigestJob.perform_now(args[:date], force: true)
+  end
+
+  desc 'Сортировка списка диалогов по приоритету агентам аккаунта, у кого сортировка не выбрана: rails care:default_sort_priority[ACCOUNT_ID]'
+  task :default_sort_priority, [:account_id] => :environment do |_t, args|
+    account = Account.find(args[:account_id])
+    changed = account.users.find_each.count do |user|
+      settings = user.ui_settings.to_h.deep_dup
+      filter = settings['conversations_filter_by'].to_h
+      next false if filter['order_by'].present?
+
+      user.update!(ui_settings: settings.merge('conversations_filter_by' => filter.merge('order_by' => 'priority_desc')))
+      true
+    end
+    puts "account #{account.id}: сортировка по приоритету выставлена #{changed} агентам"
   end
 end

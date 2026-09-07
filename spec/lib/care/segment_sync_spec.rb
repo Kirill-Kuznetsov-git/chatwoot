@@ -104,5 +104,10 @@ describe Care::SegmentSync do
       expect(contact.reload.custom_attributes['segment_synced_at']).to eq('2026-09-07T03:00:00Z')
       expect(contact.custom_attributes['segment_label']).to eq('🐋 Big Whale Seller')
     end
+
+    it 're-applies the queue to the contact only when the segment changed' do
+      expect { described_class.apply!(contact, values, now: now) }.to have_enqueued_job(Care::Queue::ContactJob).with(contact.id)
+      expect { described_class.apply!(contact, values, now: now + 1.hour) }.not_to have_enqueued_job(Care::Queue::ContactJob)
+    end
   end
 end

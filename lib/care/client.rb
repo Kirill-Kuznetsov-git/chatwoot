@@ -44,6 +44,15 @@ class Care::Client
     body
   end
 
+  # Конфиг очередей и SLA по сегментам (SCC-102), единый источник — Care.
+  # => { 'settings' => { 'classes' => [...], флаги... }, 'version' => Integer, 'updated_at' => ..., 'updated_by' => ... }
+  def queue_config
+    body = get('/api/segments/queue-config')
+    raise Error, 'care: unexpected body' unless body['settings'].is_a?(Hash) && body['settings']['classes'].is_a?(Array)
+
+    body
+  end
+
   private
 
   def get(path, query: nil)

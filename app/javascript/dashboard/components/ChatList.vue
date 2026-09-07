@@ -382,11 +382,13 @@ function setFiltersFromUISettings() {
   const { conversations_filter_by: filterBy = {} } = uiSettings.value;
   const { status, order_by: orderBy } = filterBy;
   activeStatus.value = status || wootConstants.STATUS_TYPE.OPEN;
+  // Support Care (SCC-102): пока агент не выбрал сортировку сам, список идёт по приоритету —
+  // диалоги ценных клиентов (urgent/high из очереди) стоят первыми, остальные как раньше, по активности.
   activeSortBy.value = Object.values(wootConstants.SORT_BY_TYPE).includes(
     orderBy
   )
     ? orderBy
-    : wootConstants.SORT_BY_TYPE.LAST_ACTIVITY_AT_DESC;
+    : wootConstants.SORT_BY_TYPE.PRIORITY_DESC;
 }
 
 function emitConversationLoaded() {

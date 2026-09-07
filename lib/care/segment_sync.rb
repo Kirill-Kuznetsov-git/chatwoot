@@ -65,6 +65,8 @@ module Care::SegmentSync
     changed = VALUE_KEYS.any? { |key| current[key] != merged[key] }
     if changed
       contact.update!(custom_attributes: merged)
+      # очередь/SLA (SCC-102): пере-применить класс к открытым диалогам контакта
+      Care::Queue::ContactJob.perform_later(contact.id)
     else
       contact.update_columns(custom_attributes: merged) # rubocop:disable Rails/SkipsModelValidations
     end
