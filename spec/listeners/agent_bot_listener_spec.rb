@@ -202,4 +202,38 @@ describe AgentBotListener do
       end
     end
   end
+
+  describe 'AGENT_BOT_WEBHOOK_EVENTS filter' do
+    let!(:event) do
+      Events::Base.new('conversation.status_changed', Time.zone.now, conversation: conversation,
+                                                                     changed_attributes: { status: %w[open pending] })
+    end
+
+    before { create(:agent_bot_inbox, inbox: inbox, agent_bot: agent_bot) }
+
+    context 'when the env var is unset (default)' do
+      it 'delivers every event' do
+        expect(AgentBots::WebhookJob).to receive(:perform_later).once
+        listener.conversation_status_changed(event)
+      end
+    end
+
+    context 'when the env var whitelists only message events' do
+      it 'drops a non-whitelisted event' do
+        with_modified_env AGENT_BOT_WEBHOOK_EVENTS: 'message_created,message_updated' do
+          expect(AgentBots::WebhookJob).not_to receive(:perform_later)
+          listener.conversation_status_changed(event)
+        end
+      end
+
+      it 'still delivers a whitelisted event' do
+        message = create(:message, message_type: :incoming, account: account, inbox: inbox, conversation: conversation)
+        msg_event = Events::Base.new('message.created', Time.zone.now, message: message)
+        with_modified_env AGENT_BOT_WEBHOOK_EVENTS: 'message_created,message_updated' do
+          expect(AgentBots::WebhookJob).to receive(:perform_later).once
+          listener.message_created(msg_event)
+        end
+      end
+    end
+  end
 end

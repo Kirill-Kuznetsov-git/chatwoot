@@ -84,8 +84,20 @@ class AgentBotListener < BaseListener
 
   def process_webhook_bot_event(agent_bot, payload)
     return if agent_bot.outgoing_url.blank?
+    return unless agent_bot_event_enabled?(payload[:event])
 
     AgentBots::WebhookJob.perform_later(agent_bot.outgoing_url, payload, :agent_bot_webhook,
                                         secret: agent_bot.secret, delivery_id: SecureRandom.uuid)
+  end
+
+  # Агент-бот получает ВСЕ события инбокса, а не только те, на которые подписан
+  # (в отличие от account-вебхуков с их webhook.subscriptions). При массовом
+  # закрытии диалогов это заливает очередь `high` бесполезными для бота
+  # conversation_resolved/status_changed/updated и задерживает доставку
+  # message_created на минуты. ENV AGENT_BOT_WEBHOOK_EVENTS сужает список: пусто —
+  # слать всё (поведение по умолчанию, апстрим-совместимое); задан — только эти.
+  def agent_bot_event_enabled?(event)
+    allowed = ENV.fetch('AGENT_BOT_WEBHOOK_EVENTS', '').split(',').map(&:strip).reject(&:blank?)
+    allowed.empty? || allowed.include?(event.to_s)
   end
 end
