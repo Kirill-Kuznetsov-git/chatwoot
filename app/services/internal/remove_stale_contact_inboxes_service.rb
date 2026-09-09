@@ -1,7 +1,11 @@
 class Internal::RemoveStaleContactInboxesService
   LOG_PREFIX = '[Internal::RemoveStaleContactInboxesService]'.freeze
   DEFAULT_RETENTION_DAYS = 90
-  MIN_RETENTION_DAYS = 1
+  # Нижняя граница окна: за один прогон смотрим сессии возрастом от RETENTION до RETENTION+WINDOW дней.
+  # Ежедневный запуск закрывает суточный срез с запасом в неделю; более старый хвост (после долгого
+  # простоя джоба) чистится вручную — иначе каждый прогон перебирал бы всю историю сессий с диалогами.
+  DEFAULT_WINDOW_DAYS = 7
+  MIN_DAYS = 1
   BATCH_SIZE = 10_000
   # Предохранитель от бесконечного цикла: 5000 порций = 50M строк за прогон, остальное доберёт следующая ночь.
   MAX_BATCHES = 5_000
@@ -10,27 +14,13 @@ class Internal::RemoveStaleContactInboxesService
     return unless remove_stale_contact_inbox_job_enabled?
 
     time_period = retention_days.days.ago
+    window_start = time_period - window_days.days
     started_at = Time.current
-    total_deleted = 0
-    batches = 0
 
-    log_info("starting: removing contact inboxes without conversations created before #{time_period} (#{retention_days} days)")
+    log_info("starting: removing contact inboxes without conversations created in [#{window_start}, #{time_period}) " \
+             "(retention #{retention_days} days, window #{window_days} days)")
 
-    # Каждая порция — отдельная короткая команда со своим коммитом (у воркера statement_timeout 14s,
-    # одна общая транзакция на миллионы строк недопустима). Кандидаты берутся через индекс по created_at,
-    # а условие «нет ни одного диалога» повторно проверяется внутри самой команды DELETE, чтобы диалог,
-    # созданный между выборкой и удалением, сессию не потерял.
-    while batches < MAX_BATCHES
-      ids = ContactInbox.stale_without_conversations(time_period).limit(BATCH_SIZE).pluck(:id)
-      break if ids.empty?
-
-      deleted = ContactInbox.where(id: ids).stale_without_conversations(time_period).delete_all
-      total_deleted += deleted
-      batches += 1
-      log_info("batch #{batches}: deleted #{deleted} (total #{total_deleted})")
-      # Ничего не удалилось — у всех кандидатов за миг появились диалоги; не крутиться, доберём завтра.
-      break if deleted.zero?
-    end
+    total_deleted, batches = delete_in_batches(window_start, time_period)
 
     log_info("finished: deleted #{total_deleted} contact inboxes in #{batches} batches, #{(Time.current - started_at).round(1)}s")
     check_orphan_conversations
@@ -46,20 +36,63 @@ class Internal::RemoveStaleContactInboxesService
     true
   end
 
-  # Срок хранения пустых сессий в днях из REMOVE_STALE_CONTACT_INBOX_DAYS (по умолчанию 90, как в upstream).
-  # Значение меньше MIN_RETENTION_DAYS или не число — игнорируется с ошибкой в логе, чтобы опечатка
-  # в конфиге не снесла живые сессии.
-  def retention_days
-    @retention_days ||= begin
-      raw = ENV.fetch('REMOVE_STALE_CONTACT_INBOX_DAYS', DEFAULT_RETENTION_DAYS.to_s)
-      days = Integer(raw, exception: false)
-      if days.nil? || days < MIN_RETENTION_DAYS
-        Rails.logger.error("#{LOG_PREFIX} invalid REMOVE_STALE_CONTACT_INBOX_DAYS=#{raw.inspect}, falling back to #{DEFAULT_RETENTION_DAYS}")
-        DEFAULT_RETENTION_DAYS
-      else
-        days
-      end
+  # Две короткие команды на порцию, каждая со своим коммитом (у воркера statement_timeout 14s, одна общая
+  # транзакция на миллионы строк недопустима):
+  #  1) выборка BATCH_SIZE строк только по индексу created_at с курсором — без join, поэтому останавливается
+  #     на лимите и каждая строка читается один раз;
+  #  2) DELETE по этим id, в котором условие «нет ни одного диалога» проверяется внутри самой команды, чтобы
+  #     диалог, созданный между выборкой и удалением, сессию не потерял. Сессии с диалогами просто не удаляются.
+  def delete_in_batches(window_start, time_period)
+    total_deleted = 0
+    batches = 0
+    cursor = window_start
+
+    while batches < MAX_BATCHES
+      rows = candidate_rows(cursor, time_period)
+      break if rows.empty?
+
+      deleted = ContactInbox.where(id: rows.map(&:first)).stale_without_conversations(time_period).delete_all
+      total_deleted += deleted
+      batches += 1
+      next_cursor = rows.last.second
+      log_info("batch #{batches}: scanned #{rows.size}, deleted #{deleted} (total #{total_deleted}), cursor #{next_cursor}")
+      # Неполная порция — диапазон исчерпан, дальше только сессии с диалогами из этой же порции.
+      break if rows.size < BATCH_SIZE
+      # Полная порция строк с одним и тем же created_at и все с диалогами — курсор не сдвинется, не крутиться на месте.
+      break if next_cursor <= cursor && deleted.zero?
+
+      cursor = next_cursor
     end
+
+    [total_deleted, batches]
+  end
+
+  def candidate_rows(cursor, time_period)
+    ContactInbox.where('contact_inboxes.created_at >= ? AND contact_inboxes.created_at < ?', cursor, time_period)
+                .order('contact_inboxes.created_at ASC')
+                .limit(BATCH_SIZE)
+                .pluck(:id, :created_at)
+  end
+
+  # Срок хранения пустых сессий в днях из REMOVE_STALE_CONTACT_INBOX_DAYS (по умолчанию 90, как в upstream).
+  def retention_days
+    @retention_days ||= positive_days_from_env('REMOVE_STALE_CONTACT_INBOX_DAYS', DEFAULT_RETENTION_DAYS)
+  end
+
+  # Ширина окна в днях из REMOVE_STALE_CONTACT_INBOX_WINDOW_DAYS (по умолчанию 7).
+  def window_days
+    @window_days ||= positive_days_from_env('REMOVE_STALE_CONTACT_INBOX_WINDOW_DAYS', DEFAULT_WINDOW_DAYS)
+  end
+
+  # Значение меньше MIN_DAYS или не число — игнорируется с ошибкой в логе, чтобы опечатка
+  # в конфиге не снесла живые сессии.
+  def positive_days_from_env(name, default)
+    raw = ENV.fetch(name, default.to_s)
+    days = Integer(raw, exception: false)
+    return days if days && days >= MIN_DAYS
+
+    Rails.logger.error("#{LOG_PREFIX} invalid #{name}=#{raw.inspect}, falling back to #{default}")
+    default
   end
 
   # Диалог без сессии — признак гонки «сессия удалена в момент отправки первого сообщения».
