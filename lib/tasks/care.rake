@@ -71,17 +71,22 @@ namespace :care do # rubocop:disable Metrics/BlockLength
     puts Care::Sla::DigestJob.perform_now(args[:date], force: true)
   end
 
-  desc 'Сортировка списка диалогов по приоритету агентам аккаунта, у кого сортировка не выбрана: rails care:default_sort_priority[ACCOUNT_ID]'
+  desc 'Сортировка списка диалогов как живая очередь (приоритет, затем ожидание) агентам, у кого своя не выбрана: ' \
+       'rails care:default_sort_priority[ACCOUNT_ID]'
   task :default_sort_priority, [:account_id] => :environment do |_t, args|
     account = Account.find(args[:account_id])
+    queue_order = 'priority_desc_waiting_since_asc'
+    # Не выбрана вовсе или стоит простой приоритет, который мы же и выставляли раньше — обновляем;
+    # осознанный выбор агента (по активности, по дате) не трогаем.
+    replaceable = [nil, '', 'priority_desc']
     changed = account.users.find_each.count do |user|
       settings = user.ui_settings.to_h.deep_dup
       filter = settings['conversations_filter_by'].to_h
-      next false if filter['order_by'].present?
+      next false unless replaceable.include?(filter['order_by'])
 
-      user.update!(ui_settings: settings.merge('conversations_filter_by' => filter.merge('order_by' => 'priority_desc')))
+      user.update!(ui_settings: settings.merge('conversations_filter_by' => filter.merge('order_by' => queue_order)))
       true
     end
-    puts "account #{account.id}: сортировка по приоритету выставлена #{changed} агентам"
+    puts "account #{account.id}: очередная сортировка выставлена #{changed} агентам"
   end
 end

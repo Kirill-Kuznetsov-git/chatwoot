@@ -68,6 +68,9 @@
       "priority_desc": {
         "TEXT": "Приоритет: сначала высокие"
       },
+      "priority_desc_waiting_since_asc": {
+        "TEXT": "Очередь: приоритет, затем ожидание"
+      },
       "priority_asc": {
         "TEXT": "Приоритет: сначала низкие"
       },

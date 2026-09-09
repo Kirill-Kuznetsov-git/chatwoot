@@ -1,7 +1,7 @@
 module SortHandler
   extend ActiveSupport::Concern
 
-  class_methods do
+  class_methods do # rubocop:disable Metrics/BlockLength
     def sort_on_last_activity_at(sort_direction = :desc)
       order(last_activity_at: sort_direction)
     end
@@ -20,6 +20,18 @@ module SortHandler
 
     def sort_on_waiting_since(sort_direction = :asc)
       order(generate_sql_query("(waiting_since IS NULL), waiting_since #{sort_direction.to_s.upcase}, created_at ASC"))
+    end
+
+    # Порядок работы живой очереди (SCC-102): сначала важность клиента (priority), внутри неё — кто дольше
+    # ждёт ответа, а диалоги, где ответ уже дан и клиент не ждёт, уходят в конец своей группы.
+    # Штатный sort_on_priority внутри приоритета ставит наверх свежую активность, из-за чего давно
+    # ждущий клиент опускался ниже только что отвеченного.
+    def sort_on_priority_waiting_since(sort_direction = :desc)
+      order(
+        generate_sql_query(
+          "priority #{sort_direction.to_s.upcase} NULLS LAST, (waiting_since IS NULL), waiting_since ASC, created_at ASC"
+        )
+      )
     end
 
     def last_messaged_conversations
