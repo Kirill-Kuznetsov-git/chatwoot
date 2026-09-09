@@ -1,4 +1,14 @@
-care_sla = Care::Sla::ConversationPresenter.for(conversation)
+care_segment = Care::Sla::ConversationPresenter.segment_for(conversation)
+
+if care_segment.present?
+  json.care_segment do
+    json.label care_segment[:label]
+    json.weight care_segment[:weight]
+    json.tier_90d care_segment[:tier_90d]
+  end
+end
+
+care_sla = Care::Sla::ConversationPresenter.sla_for(conversation)
 
 if care_sla.present?
   json.applied_sla do

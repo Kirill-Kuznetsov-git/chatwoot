@@ -1,19 +1,34 @@
-# Отдаёт сроки нашего SLA-движка (SCC-102) в том виде, который понимает штатный фронт Chatwoot:
-# карточка диалога рисует таймер компонентом SLACardLabel.vue через helper/slaHelper.js, а тот ждёт
-# объект applied_sla с полями sla_frt_due_at / sla_nrt_due_at / sla_rt_due_at (unix) и id.
-# Enterprise-модуль SLA при этом не используется и не включается — считаем мы сами.
+# Что Support Care добавляет в API диалога (SCC-102). Оба блока живут вне тегов и вне полей поддержки:
 #
-# Показ включается флагом `sla_timer_enabled` в конфиге Care, чтобы таймеры не появились у операторов
-# раньше, чем этого захотят в поддержке.
+# * care_segment — значимость клиента. В meta.sender список диалогов отдаёт контакт без
+#   custom_attributes, поэтому сегмент кладём отдельным полем: карточка рисует его значком с эмодзи.
+# * applied_sla — сроки нашего SLA-движка в формате, который понимает штатный таймер Chatwoot
+#   (components-next/.../SLACardLabel.vue + helper/slaHelper.js). Enterprise-модуль SLA не включаем
+#   и не используем, считаем сами. Показ гейтится флагом sla_timer_enabled в конфиге Care.
 class Care::Sla::ConversationPresenter
-  # Конфиг читается из минутного кэша в Redis, отдельного запроса в Care на каждый диалог нет.
-  def self.enabled?
-    Care::SegmentSync.enabled? && Care::Queue::Config.current.sla_timer_enabled
+  SEGMENT_KEYS = %w[segment_label segment_weight segment_tier_90d].freeze
+
+  def self.config
+    Care::Queue::Config.current
   end
 
-  # => Hash для jbuilder или nil, если таймер выключен либо диалог не в очереди ценных.
-  def self.for(conversation)
-    return nil unless enabled?
+  # => Hash с label/weight/tier_90d или nil, если сегмента у контакта нет.
+  def self.segment_for(conversation)
+    return nil unless Care::SegmentSync.enabled?
+
+    attributes = conversation.contact&.custom_attributes.to_h
+    return nil if attributes['segment_label'].blank?
+
+    {
+      label: attributes['segment_label'],
+      weight: attributes['segment_weight'],
+      tier_90d: attributes['segment_tier_90d']
+    }
+  end
+
+  # => Hash со сроками для таймера или nil, если таймер выключен либо диалог не в очереди ценных.
+  def self.sla_for(conversation)
+    return nil unless Care::SegmentSync.enabled? && config.sla_timer_enabled
 
     tracker = Care::SlaTracker.find_by(conversation_id: conversation.id, active: true)
     return nil if tracker.nil?

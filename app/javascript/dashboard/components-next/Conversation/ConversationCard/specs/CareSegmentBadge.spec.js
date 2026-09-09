@@ -1,9 +1,9 @@
 import { mount } from '@vue/test-utils';
 import CareSegmentBadge from '../CareSegmentBadge.vue';
 
-const mountBadge = props =>
+const mountBadge = conversation =>
   mount(CareSegmentBadge, {
-    props,
+    props: { conversation },
     global: {
       directives: { tooltip: {} },
     },
@@ -12,56 +12,30 @@ const mountBadge = props =>
 describe('CareSegmentBadge', () => {
   it('shows the weight emoji for valuable customers', () => {
     const wrapper = mountBadge({
-      contact: {
-        customAttributes: {
-          segmentLabel: '🐋 Big Whale Seller',
-          segmentWeight: 'Big Whale',
-        },
-      },
+      careSegment: { label: '🐋 Big Whale Seller', weight: 'Big Whale' },
     });
 
     expect(wrapper.text()).toBe('🐋');
   });
 
-  it('reads snake_case attributes too, since the payload is not always transformed', () => {
+  it('reads the snake_case payload too', () => {
     const wrapper = mountBadge({
-      contact: {
-        customAttributes: {
-          segment_label: '🦈 Whale Buyer',
-          segment_weight: 'Whale',
-        },
+      care_segment: {
+        label: '🦈 Whale Buyer',
+        weight: 'Whale',
+        tier_90d: 'Small',
       },
     });
 
     expect(wrapper.text()).toBe('🦈');
   });
 
-  it('falls back to the sender on the conversation when the contact is not loaded yet', () => {
-    const wrapper = mountBadge({
-      contact: {},
-      conversation: {
-        meta: {
-          sender: {
-            customAttributes: {
-              segmentLabel: '🐳 Mega Whale Trader',
-              segmentWeight: 'Mega Whale',
-            },
-          },
-        },
-      },
-    });
-
-    expect(wrapper.text()).toBe('🐳');
-  });
-
   it('shows the badge for the Big tier regardless of lifetime weight', () => {
     const wrapper = mountBadge({
-      contact: {
-        customAttributes: {
-          segmentLabel: '🐠 Mid Fish Buyer',
-          segmentWeight: 'Mid Fish',
-          segmentTier90d: 'Big',
-        },
+      careSegment: {
+        label: '🐠 Mid Fish Buyer',
+        weight: 'Mid Fish',
+        tier90d: 'Big',
       },
     });
 
@@ -70,27 +44,20 @@ describe('CareSegmentBadge', () => {
 
   it('stays out of the way for ordinary and unsegmented customers', () => {
     const ordinary = mountBadge({
-      contact: {
-        customAttributes: {
-          segmentLabel: '🌊 No Purchases Newcomer',
-          segmentWeight: 'No Purchases',
-        },
+      careSegment: {
+        label: '🌊 No Purchases Newcomer',
+        weight: 'No Purchases',
+        tier90d: 'Small',
       },
     });
-    const unknown = mountBadge({ contact: {}, conversation: {} });
 
     expect(ordinary.text()).toBe('');
-    expect(unknown.text()).toBe('');
+    expect(mountBadge({}).text()).toBe('');
   });
 
   it('renders nothing when the label carries no emoji', () => {
     const wrapper = mountBadge({
-      contact: {
-        customAttributes: {
-          segmentLabel: 'Whale Buyer',
-          segmentWeight: 'Whale',
-        },
-      },
+      careSegment: { label: 'Whale Buyer', weight: 'Whale' },
     });
 
     expect(wrapper.text()).toBe('');
