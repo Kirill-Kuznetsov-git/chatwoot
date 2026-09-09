@@ -148,5 +148,13 @@
     "MESSAGE_READ": "Прочитано",
     "SENDING": "Отправка",
     "UNREAD_COUNT_OVERFLOW": "9+"
+  },
+  "CARE_SEGMENT": {
+    "ROLE": {
+      "BUYER": "покупатель",
+      "SELLER": "продавец",
+      "TRADER": "трейдер",
+      "NEWCOMER": "новичок"
+    }
   }
 }

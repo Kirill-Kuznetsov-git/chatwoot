@@ -4,6 +4,7 @@ if care_segment.present?
   json.care_segment do
     json.label care_segment[:label]
     json.weight care_segment[:weight]
+    json.role care_segment[:role]
     json.tier_90d care_segment[:tier_90d]
   end
 end

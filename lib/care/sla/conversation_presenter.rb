@@ -6,7 +6,7 @@
 #   (components-next/.../SLACardLabel.vue + helper/slaHelper.js). Enterprise-модуль SLA не включаем
 #   и не используем, считаем сами. Показ гейтится флагом sla_timer_enabled в конфиге Care.
 class Care::Sla::ConversationPresenter
-  SEGMENT_KEYS = %w[segment_label segment_weight segment_tier_90d].freeze
+  SEGMENT_KEYS = %w[segment_label segment_weight segment_role segment_tier_90d].freeze
 
   def self.config
     Care::Queue::Config.current
@@ -22,6 +22,7 @@ class Care::Sla::ConversationPresenter
     {
       label: attributes['segment_label'],
       weight: attributes['segment_weight'],
+      role: attributes['segment_role'],
       tier_90d: attributes['segment_tier_90d']
     }
   end

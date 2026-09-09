@@ -91,7 +91,7 @@ const selectedModel = computed({
 
       <div class="w-px h-3 bg-n-slate-6 flex-shrink-0" />
 
-      <div class="w-4 flex items-center justify-center flex-shrink-0">
+      <div class="w-5 flex items-center justify-center flex-shrink-0">
         <CareSegmentBadge :conversation="chat" />
       </div>
 

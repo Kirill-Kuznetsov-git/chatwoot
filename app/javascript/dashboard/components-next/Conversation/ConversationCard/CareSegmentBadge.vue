@@ -1,9 +1,10 @@
 <script setup>
-// Support Care (SCC-102): значимость клиента отдельным значком, а не ещё одним тегом в общей строке.
-// Сегмент приходит в диалоге полем care_segment (метка вида «🐋 Big Whale Seller»), показываем только
-// эмодзи, полное название — в подсказке. Рядовым сегментам значка не рисуем, иначе он был бы почти
-// у каждого обращения и перестал бы что-либо значить.
+// Support Care (SCC-102): сегмент клиента читается прямо в строке, без наведения.
+// Цвет чипа = значимость по обороту (чем насыщеннее, тем крупнее клиент), буква = роль:
+// B — покупатель, S — продавец, T — трейдер, N — новичок. Полное название в подсказке.
+// Рядовым клиентам чип не рисуем: иначе он был бы почти у каждого обращения и перестал бы работать.
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
   conversation: {
@@ -12,35 +13,52 @@ const props = defineProps({
   },
 });
 
-const VALUABLE_WEIGHTS = ['Mega Whale', 'Big Whale', 'Whale', 'Big Fish'];
-const VALUABLE_TIER = 'Big';
+const { t } = useI18n();
+
+// Порядок важен: от самого крупного к младшему.
+const WEIGHT_STYLES = {
+  'Mega Whale': 'bg-n-iris-9 text-white',
+  'Big Whale': 'bg-n-blue-9 text-white',
+  Whale: 'bg-n-teal-9 text-white',
+  'Big Fish': 'bg-n-slate-4 text-n-slate-12',
+};
+const ROLE_LETTERS = { Buyer: 'B', Seller: 'S', Trader: 'T', Newcomer: 'N' };
+const BIG_TIER = 'Big';
 
 const segment = computed(
   () => props.conversation?.careSegment ?? props.conversation?.care_segment ?? {}
 );
 
-const label = computed(() => String(segment.value.label ?? '').trim());
+const weight = computed(() => segment.value.weight ?? null);
+const tier = computed(() => segment.value.tier90d ?? segment.value.tier_90d ?? null);
+const role = computed(() => segment.value.role ?? null);
 
-const isValuable = computed(() => {
-  const tier = segment.value.tier90d ?? segment.value.tier_90d;
-  return VALUABLE_WEIGHTS.includes(segment.value.weight) || tier === VALUABLE_TIER;
+// Big Fish попадает в список и по 90-дневному уровню: активный середняк тоже важен оператору.
+const style = computed(() => {
+  if (WEIGHT_STYLES[weight.value]) return WEIGHT_STYLES[weight.value];
+  return tier.value === BIG_TIER ? WEIGHT_STYLES['Big Fish'] : null;
 });
 
-// Первый токен метки — эмодзи веса; если его нет, значок не рисуем.
-const emoji = computed(() => {
-  const first = label.value.split(' ')[0] ?? '';
-  return first.length > 0 && first.length <= 3 ? first : '';
+const letter = computed(() => ROLE_LETTERS[role.value] ?? '•');
+
+const tooltip = computed(() => {
+  const label = String(segment.value.label ?? '').trim();
+  const roleName = role.value
+    ? t(`CARE_SEGMENT.ROLE.${String(role.value).toUpperCase()}`)
+    : '';
+  return [label, roleName].filter(Boolean).join(' · ');
 });
 
-const show = computed(() => isValuable.value && emoji.value !== '');
+const show = computed(() => Boolean(style.value));
 </script>
 
 <template>
   <div
     v-if="show"
-    v-tooltip.top="label"
-    class="flex items-center justify-center flex-shrink-0 size-5 text-sm leading-none"
+    v-tooltip.top="tooltip"
+    class="inline-flex items-center justify-center flex-shrink-0 rounded-md size-[18px] text-[10px] font-semibold leading-none tabular-nums"
+    :class="style"
   >
-    {{ emoji }}
+    {{ letter }}
   </div>
 </template>

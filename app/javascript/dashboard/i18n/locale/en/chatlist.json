@@ -148,5 +148,13 @@
     "MESSAGE_READ": "Read",
     "SENDING": "Sending",
     "UNREAD_COUNT_OVERFLOW": "9+"
+  },
+  "CARE_SEGMENT": {
+    "ROLE": {
+      "BUYER": "buyer",
+      "SELLER": "seller",
+      "TRADER": "trader",
+      "NEWCOMER": "newcomer"
+    }
   }
 }

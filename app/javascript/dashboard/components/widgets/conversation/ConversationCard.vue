@@ -175,7 +175,6 @@ watch(
             />
             <span class="truncate">{{ assignee.name }}</span>
           </span>
-          <CareSegmentBadge :conversation="chat" />
           <CardPriorityIcon
             :priority="chat.priority"
             class="flex-shrink-0 !size-3.5"
@@ -183,10 +182,13 @@ watch(
         </div>
       </div>
       <h4
-        class="conversation--user text-sm my-0 mx-2 capitalize pt-0.5 text-ellipsis overflow-hidden whitespace-nowrap flex-1 min-w-0 ltr:pr-16 rtl:pl-16 text-n-slate-12"
+        class="conversation--user text-sm my-0 mx-2 capitalize pt-0.5 flex items-center gap-1.5 min-w-0 flex-1 ltr:pr-16 rtl:pl-16 text-n-slate-12"
         :class="hasUnread ? 'font-semibold' : 'font-medium'"
       >
-        {{ currentContact.name }}
+        <CareSegmentBadge :conversation="chat" />
+        <span class="text-ellipsis overflow-hidden whitespace-nowrap min-w-0">
+          {{ currentContact.name }}
+        </span>
       </h4>
       <VoiceCallStatus
         v-if="voiceCallData.status"
