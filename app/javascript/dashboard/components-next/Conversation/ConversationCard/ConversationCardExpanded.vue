@@ -5,6 +5,7 @@ import CardAvatar from './CardAvatar.vue';
 import CardContent from './CardContent.vue';
 import CardLabels from './CardLabelsV5.vue';
 import CardPriorityIcon from './CardPriorityIcon.vue';
+import CareSegmentBadge from './CareSegmentBadge.vue';
 import InboxName from 'dashboard/components-next/Conversation/InboxName.vue';
 import Avatar from 'next/avatar/Avatar.vue';
 import TimeAgo from 'dashboard/components/ui/TimeAgo.vue';
@@ -89,6 +90,10 @@ const selectedModel = computed({
       </div>
 
       <div class="w-px h-3 bg-n-slate-6 flex-shrink-0" />
+
+      <div class="w-4 flex items-center justify-center flex-shrink-0">
+        <CareSegmentBadge :conversation="chat" />
+      </div>
 
       <div class="w-4 flex items-center justify-center flex-shrink-0">
         <CardPriorityIcon :priority="chat.priority" show-empty />
