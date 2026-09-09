@@ -14,11 +14,12 @@ RSpec.describe Care::SegmentResyncChangedJob do
     create(:contact, account: account, identifier: ids[0])
     create(:contact, account: account, identifier: ids[2])
     create(:contact, account: other_account, identifier: ids[3])
+    Redis::Alfred.delete(described_class::LAST_SUCCESS_KEY)
   end
 
-  it 'is scheduled daily on the low queue after the Care nightly run' do
+  it 'is scheduled hourly on the low queue and decides itself when to run' do
     schedule = YAML.load_file(Rails.root.join('config/schedule.yml'))['care_segment_resync_changed_job']
-    expect(schedule).to include('class' => 'Care::SegmentResyncChangedJob', 'cron' => '30 3 * * *', 'queue' => 'low')
+    expect(schedule).to include('class' => 'Care::SegmentResyncChangedJob', 'cron' => '30 * * * *', 'queue' => 'low')
     expect(described_class.new.queue_name).to eq('low')
   end
 
@@ -51,5 +52,42 @@ RSpec.describe Care::SegmentResyncChangedJob do
   it 'does nothing when disabled' do
     expect(client).not_to receive(:changed_user_ids)
     expect(described_class.perform_now).to be_nil
+  end
+
+  describe 'skipping and catching up' do
+    before do
+      allow(client).to receive(:changed_user_ids).and_return({ 'user_ids' => ids[0, 1], 'next_after_id' => nil })
+    end
+
+    it 'records a success stamp and skips the next hourly run' do
+      with_modified_env(env) { described_class.perform_now }
+      expect(Redis::Alfred.get(described_class::LAST_SUCCESS_KEY)).to be_present
+
+      expect(with_modified_env(env) { described_class.perform_now }).to be_nil
+      expect(client).to have_received(:changed_user_ids).once
+    end
+
+    it 'runs again once the interval has passed and starts the window at the last success' do
+      last_success = 25.hours.ago.change(usec: 0)
+      Redis::Alfred.set(described_class::LAST_SUCCESS_KEY, last_success.utc.iso8601)
+
+      with_modified_env(env) { described_class.perform_now }
+
+      expect(client).to have_received(:changed_user_ids).with(hash_including(since: within(1.second).of(last_success)))
+    end
+
+    it 'never looks back further than a week, even after a long outage' do
+      Redis::Alfred.set(described_class::LAST_SUCCESS_KEY, 30.days.ago.utc.iso8601)
+
+      with_modified_env(env) { described_class.perform_now }
+
+      expect(client).to have_received(:changed_user_ids).with(hash_including(since: within(1.minute).of(7.days.ago)))
+    end
+
+    it 'force ignores both the stamp and the interval' do
+      Redis::Alfred.set(described_class::LAST_SUCCESS_KEY, 1.minute.ago.utc.iso8601)
+
+      expect(with_modified_env(env) { described_class.perform_now(nil, force: true) }).to eq(pages: 1, ids: 1, contacts: 1)
+    end
   end
 end

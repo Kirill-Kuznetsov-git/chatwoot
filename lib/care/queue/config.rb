@@ -19,8 +19,8 @@ class Care::Queue::Config
     end
   end
 
-  attr_reader :version, :source, :classes, :risk_share, :queue_enabled, :sla_labels_enabled, :alerts_enabled,
-              :digest_enabled, :digest_hour_utc, :kpi_first_response_minutes
+  attr_reader :version, :source, :classes, :risk_share, :queue_enabled, :sla_labels_enabled, :sla_timer_enabled,
+              :alerts_enabled, :digest_enabled, :digest_hour_utc, :kpi_first_response_minutes
 
   # source: cache | care | last_good | defaults — для логов и rake care:queue_config.
   def self.current(client: nil)
@@ -67,6 +67,7 @@ class Care::Queue::Config
     @risk_share = settings.fetch(:risk_share, 0.8).to_f
     @queue_enabled = settings.fetch(:queue_enabled, true) == true
     @sla_labels_enabled = settings.fetch(:sla_labels_enabled, false) == true
+    @sla_timer_enabled = settings.fetch(:sla_timer_enabled, false) == true
     @alerts_enabled = settings.fetch(:alerts_enabled, false) == true
     @digest_enabled = settings.fetch(:digest_enabled, true) == true
     @digest_hour_utc = settings.fetch(:digest_hour_utc, 6).to_i

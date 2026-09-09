@@ -16,6 +16,7 @@ module Care::Queue::Defaults
     'risk_share' => 0.8,
     'queue_enabled' => true,
     'sla_labels_enabled' => false,
+    'sla_timer_enabled' => false,
     'alerts_enabled' => false,
     'digest_enabled' => true,
     'digest_hour_utc' => 6,

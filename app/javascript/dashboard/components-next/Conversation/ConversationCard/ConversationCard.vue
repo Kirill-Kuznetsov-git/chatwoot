@@ -10,6 +10,7 @@ import Avatar from 'dashboard/components-next/avatar/Avatar.vue';
 import CardMessagePreview from './CardMessagePreview.vue';
 import CardMessagePreviewWithMeta from './CardMessagePreviewWithMeta.vue';
 import CardPriorityIcon from './CardPriorityIcon.vue';
+import CareSegmentBadge from './CareSegmentBadge.vue';
 
 const props = defineProps({
   conversation: {
@@ -103,6 +104,7 @@ const onCardClick = e => {
           {{ currentContactName }}
         </h4>
         <div class="flex items-center gap-2">
+          <CareSegmentBadge :contact="contact" :conversation="conversation" />
           <CardPriorityIcon :priority="conversation.priority || null" />
           <div
             v-tooltip.left="inboxName"

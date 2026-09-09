@@ -6,6 +6,10 @@ import { mapGetters } from 'vuex';
 import { useAdmin } from 'dashboard/composables/useAdmin';
 import { hasAnUpdateAvailable } from './versionCheckHelper';
 
+// Форк StarPets: версию Chatwoot мы поднимаем сами и осознанно, релизы upstream операторам и
+// администраторам поддержки ничего не дают — баннер только мешает. Вернуть true, если понадобится.
+const SHOW_UPSTREAM_UPDATE_BANNER = false;
+
 export default {
   components: { Banner },
   props: {
@@ -35,6 +39,7 @@ export default {
     },
     shouldShowBanner() {
       return (
+        SHOW_UPSTREAM_UPDATE_BANNER &&
         !this.userDismissedBanner &&
         this.globalConfig.displayManifest &&
         this.updateAvailable &&
