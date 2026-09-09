@@ -6,9 +6,9 @@ class Internal::RemoveStaleContactInboxesService
   # простоя джоба) чистится вручную — иначе каждый прогон перебирал бы всю историю сессий с диалогами.
   DEFAULT_WINDOW_DAYS = 7
   MIN_DAYS = 1
-  BATCH_SIZE = 10_000
-  # Предохранитель от бесконечного цикла: 5000 порций = 50M строк за прогон, остальное доберёт следующая ночь.
-  MAX_BATCHES = 5_000
+  BATCH_SIZE = 5_000
+  # Предохранитель от бесконечного цикла: 10000 порций = 50M строк за прогон, остальное доберёт следующая ночь.
+  MAX_BATCHES = 10_000
 
   def perform
     return unless remove_stale_contact_inbox_job_enabled?
