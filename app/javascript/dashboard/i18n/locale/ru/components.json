@@ -1,7 +1,8 @@
 {
   "PAGINATION_FOOTER": {
     "SHOWING": "Показаны {startItem}-{endItem} из {totalItems} элементов",
-    "CURRENT_PAGE_INFO": "{currentPage} из {totalPages} страниц"
+    "CURRENT_PAGE_INFO": "{currentPage} из {totalPages} страниц",
+    "SHOWING_RANGE": "Показаны {startItem}-{endItem}"
   },
   "COMBOBOX": {
     "PLACEHOLDER": "Выберите параметр...",

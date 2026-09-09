@@ -54,6 +54,30 @@ RSpec.describe 'Contacts API', type: :request do
         expect(contact_inboxes_source_ids).to include(contact_inbox.source_id)
       end
 
+      it 'returns has_more instead of an exact count for the unfiltered list' do
+        get "/api/v1/accounts/#{account.id}/contacts",
+            headers: admin.create_new_auth_token,
+            as: :json
+
+        expect(response).to have_http_status(:success)
+        meta = response.parsed_body['meta']
+        # Точный подсчёт всех контактов аккаунта слишком дорог, поэтому его нет
+        expect(meta).not_to have_key('count')
+        expect(meta['has_more']).to be(false)
+      end
+
+      it 'reports has_more when the page is full' do
+        stub_const('Api::V1::Accounts::ContactsController::RESULTS_PER_PAGE', 2)
+
+        get "/api/v1/accounts/#{account.id}/contacts",
+            headers: admin.create_new_auth_token,
+            as: :json
+
+        expect(response).to have_http_status(:success)
+        expect(response.parsed_body['meta']['has_more']).to be(true)
+        expect(response.parsed_body['payload'].size).to eq(2)
+      end
+
       it 'returns all contacts without contact inboxes' do
         get "/api/v1/accounts/#{account.id}/contacts?include_contact_inboxes=false",
             headers: admin.create_new_auth_token,

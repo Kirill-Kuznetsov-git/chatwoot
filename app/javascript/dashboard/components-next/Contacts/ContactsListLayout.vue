@@ -12,8 +12,10 @@ const props = defineProps({
   headerTitle: { type: String, default: '' },
   showPaginationFooter: { type: Boolean, default: true },
   currentPage: { type: Number, default: 1 },
-  totalItems: { type: Number, default: 100 },
+  // null означает «общее число неизвестно», подвал в этом случае идёт по hasMore
+  totalItems: { type: Number, default: null },
   itemsPerPage: { type: Number, default: 15 },
+  itemsOnPage: { type: Number, default: null },
   activeSort: { type: String, default: '' },
   activeOrdering: { type: String, default: '' },
   activeSegment: { type: Object, default: null },
@@ -118,10 +120,13 @@ const showPagination = computed(() => {
       <footer v-if="showPagination" class="sticky bottom-0 z-0">
         <PaginationFooter
           current-page-info="CONTACTS_LAYOUT.PAGINATION_FOOTER.SHOWING"
+          unknown-total-page-info="CONTACTS_LAYOUT.PAGINATION_FOOTER.SHOWING_RANGE"
           :current-page="currentPage"
           :total-items="totalItems"
           class="max-w-[67rem]"
           :items-per-page="itemsPerPage"
+          :items-on-page="itemsOnPage"
+          :has-more="hasMore"
           @update:current-page="updateCurrentPage"
         />
       </footer>

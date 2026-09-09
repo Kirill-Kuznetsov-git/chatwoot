@@ -16,9 +16,24 @@ class Api::V1::Accounts::ContactsController < Api::V1::Accounts::BaseController
   before_action :fetch_contact, only: [:show, :update, :destroy, :avatar, :contactable_inboxes, :destroy_custom_attributes]
   before_action :set_include_contact_inboxes, only: [:index, :active, :search, :filter, :show, :update]
 
+  # Точное общее число намеренно не считаем: `total_count` для scope `resolved_contacts`
+  # разворачивался в `COUNT(*)` по всей таблице контактов. На проде это 7,16 млн строк,
+  # параллельное сканирование кучи с чтением ~1,2 ГБ с диска за вызов: в среднем 23,8 с,
+  # максимум 31,4 с — то есть страница «Контакты» иногда не открывалась вовсе, запрос
+  # обрывал таймаут роутера на 30-й секунде. Частичный индекс тут не помогает: Rails
+  # передаёт пустые строки bind-параметрами, и планировщик не может сопоставить их
+  # с предикатом частичного индекса, требующим литералов.
+  # Вместо счётчика берём на одну запись больше страницы и отдаём признак `has_more` —
+  # тот же приём, что уже используется в `search`.
+  # Исключение: когда список сужен фильтром по лейблам, выборка маленькая, точный
+  # подсчёт дешёвый, а число агенту полезно — там оставляем `count` как было.
   def index
-    @contacts = fetch_contacts(resolved_contacts)
-    @contacts_count = @contacts.total_count
+    if params[:labels].present?
+      @contacts = fetch_contacts(resolved_contacts)
+      @total_count = @contacts.total_count
+    else
+      @contacts = fetch_contacts_with_has_more(resolved_contacts)
+    end
   end
 
   def search

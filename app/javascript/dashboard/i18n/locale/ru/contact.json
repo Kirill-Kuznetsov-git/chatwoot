@@ -379,7 +379,8 @@
       }
     },
     "PAGINATION_FOOTER": {
-      "SHOWING": "Показаны {startItem} - {endItem} из {totalItems} контактов"
+      "SHOWING": "Показаны {startItem} - {endItem} из {totalItems} контактов",
+      "SHOWING_RANGE": "Показаны контакты {startItem} - {endItem}"
     },
     "FILTER": {
       "NAME": "Имя",

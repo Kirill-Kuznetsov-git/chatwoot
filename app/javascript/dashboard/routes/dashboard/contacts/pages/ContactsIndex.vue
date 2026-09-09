@@ -64,7 +64,12 @@ const isFetchingList = computed(
   () => uiFlags.value.isFetching || customViewsUiFlags.value.isFetching
 );
 const currentPage = computed(() => Number(meta.value?.currentPage));
-const totalItems = computed(() => meta.value?.count);
+// Список контактов без фильтров не отдаёт общее число: точный COUNT по таблице
+// стоил до 31 с и обрывался таймаутом. В этом случае передаём null, и подвал
+// пагинации переключается на навигацию по hasMore.
+const totalItems = computed(() =>
+  Number.isFinite(meta.value?.count) ? meta.value.count : null
+);
 const hasMore = computed(() => meta.value?.hasMore ?? false);
 const isSearchView = computed(() => !!searchQuery.value);
 
@@ -501,6 +506,7 @@ onMounted(async () => {
       :header-title="headerTitle"
       :current-page="currentPage"
       :total-items="totalItems"
+      :items-on-page="contacts.length"
       :show-pagination-footer="!isFetchingList && hasContacts && !isSearchView"
       :active-sort="sortState.activeSort"
       :active-ordering="sortState.activeOrdering"

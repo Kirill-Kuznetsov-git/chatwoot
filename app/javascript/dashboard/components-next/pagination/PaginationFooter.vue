@@ -10,9 +10,12 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  // null означает «общее число неизвестно»: некоторые списки не считают total,
+  // потому что точный COUNT по таблице слишком дорог. В этом режиме подвал
+  // ориентируется на hasMore и itemsOnPage.
   totalItems: {
     type: Number,
-    required: true,
+    default: null,
   },
   itemsPerPage: {
     type: Number,
@@ -22,29 +25,63 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  // Есть ли ещё страницы. Используется только когда totalItems неизвестен.
+  hasMore: {
+    type: Boolean,
+    default: false,
+  },
+  // Сколько записей реально пришло на текущей странице. Нужно, чтобы на последней
+  // странице показать честный диапазон, а не округлённый до размера страницы.
+  itemsOnPage: {
+    type: Number,
+    default: null,
+  },
+  // Ключ перевода для диапазона без общего числа.
+  unknownTotalPageInfo: {
+    type: String,
+    default: '',
+  },
 });
 const emit = defineEmits(['update:currentPage']);
 const { t } = useI18n();
 const { formatCompactNumber, formatFullNumber } = useNumberFormatter();
 
+const isTotalKnown = computed(() => Number.isFinite(props.totalItems));
+
 const totalPages = computed(() =>
-  Math.ceil(props.totalItems / props.itemsPerPage)
+  isTotalKnown.value ? Math.ceil(props.totalItems / props.itemsPerPage) : null
 );
 const startItem = computed(
   () => (props.currentPage - 1) * props.itemsPerPage + 1
 );
-const endItem = computed(() =>
-  Math.min(startItem.value + props.itemsPerPage - 1, props.totalItems)
-);
-const isFirstPage = computed(() => props.currentPage === 1);
-const isLastPage = computed(() => props.currentPage === totalPages.value);
-const changePage = newPage => {
-  if (newPage >= 1 && newPage <= totalPages.value) {
-    emit('update:currentPage', newPage);
+const endItem = computed(() => {
+  if (isTotalKnown.value) {
+    return Math.min(startItem.value + props.itemsPerPage - 1, props.totalItems);
   }
+  const onPage = Number.isFinite(props.itemsOnPage)
+    ? props.itemsOnPage
+    : props.itemsPerPage;
+  return startItem.value + Math.max(onPage, 1) - 1;
+});
+const isFirstPage = computed(() => props.currentPage === 1);
+const isLastPage = computed(() =>
+  isTotalKnown.value ? props.currentPage === totalPages.value : !props.hasMore
+);
+const changePage = newPage => {
+  if (newPage < 1) return;
+  if (isTotalKnown.value && newPage > totalPages.value) return;
+  emit('update:currentPage', newPage);
 };
 
 const currentPageInformation = computed(() => {
+  if (!isTotalKnown.value) {
+    const key = props.unknownTotalPageInfo || 'PAGINATION_FOOTER.SHOWING_RANGE';
+    return t(key, {
+      startItem: formatFullNumber(startItem.value),
+      endItem: formatFullNumber(endItem.value),
+    });
+  }
+
   const translationKey = props.currentPageInfo || 'PAGINATION_FOOTER.SHOWING';
   return t(
     translationKey,
@@ -57,7 +94,10 @@ const currentPageInformation = computed(() => {
   );
 });
 
+// Без общего числа страниц надпись «из N страниц» показать нечего.
 const pageInfo = computed(() => {
+  if (!isTotalKnown.value) return '';
+
   return t(
     'PAGINATION_FOOTER.CURRENT_PAGE_INFO',
     {
@@ -117,6 +157,7 @@ const pageInfo = computed(() => {
         @click="changePage(currentPage + 1)"
       />
       <Button
+        v-if="isTotalKnown"
         icon="i-lucide-chevrons-right"
         variant="ghost"
         color="slate"

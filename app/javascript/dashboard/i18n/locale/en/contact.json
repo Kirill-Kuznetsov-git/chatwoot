@@ -380,7 +380,8 @@
       }
     },
     "PAGINATION_FOOTER": {
-      "SHOWING": "Showing {startItem} - {endItem} of {totalItems} contact | Showing {startItem} - {endItem} of {totalItems} contacts"
+      "SHOWING": "Showing {startItem} - {endItem} of {totalItems} contact | Showing {startItem} - {endItem} of {totalItems} contacts",
+      "SHOWING_RANGE": "Showing contacts {startItem} - {endItem}"
     },
     "FILTER": {
       "NAME": "Name",
