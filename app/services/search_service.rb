@@ -1,6 +1,22 @@
 class SearchService
   pattr_initialize [:current_user!, :current_account!, :params!, :search_type!]
 
+  # Отбор совпадений и сортировка разделены намеренно.
+  # При `ILIKE '%q%' ... ORDER BY last_activity_at LIMIT 15` планировщик Postgres идёт по индексу
+  # сортировки и проверяет ILIKE построчно: на 7 млн контактов редкое слово перебирает таблицу
+  # целиком. Замер на проде: в среднем 213 с, максимум 349 с — такие запросы обрывал таймаут
+  # роутера, и поиск у агентов просто зависал.
+  # Подзапрос с LIMIT планировщик обязан выполнить первым, поэтому используется триграммный
+  # индекс `index_contacts_on_name_email_phone_number_identifier`, а сортируется уже небольшой
+  # результат. После правки на тех же данных: 153 мс по контактам, 136 мс по диалогам.
+  #
+  # Потолок набора совпадений. Если запрос совпал с большим числом записей, сортировка идёт
+  # внутри первых SEARCH_MATCH_LIMIT найденных. Для поисковой строки с постраничным выводом
+  # по 15 записей это 666 страниц, до которых никто не доходит.
+  SEARCH_MATCH_LIMIT = 10_000
+
+  CONTACT_SEARCH_CONDITION = 'name ILIKE :search OR email ILIKE :search OR phone_number ILIKE :search OR identifier ILIKE :search'.freeze
+
   def account_user
     @account_user ||= current_account.account_users.find_by(user: current_user)
   end
@@ -32,18 +48,46 @@ class SearchService
 
   def filter_conversations
     conversations_query = current_account.conversations.where(inbox_id: accessable_inbox_ids)
-                                         .joins('INNER JOIN contacts ON conversations.contact_id = contacts.id')
-                                         .where("cast(conversations.display_id as text) ILIKE :search OR contacts.name ILIKE :search OR contacts.email
-                            ILIKE :search OR contacts.phone_number ILIKE :search OR contacts.identifier ILIKE :search", search: "%#{search_query}%")
 
     if current_account.feature_enabled?('advanced_search')
       conversations_query = apply_time_filter(conversations_query,
                                               'conversations.last_activity_at')
     end
 
-    @conversations = conversations_query.order('conversations.created_at DESC')
-                                        .page(params[:page])
-                                        .per(15)
+    @conversations = scope_conversations_to_search(conversations_query)
+                     .order('conversations.created_at DESC')
+                     .page(params[:page])
+                     .per(15)
+  end
+
+  # Раньше это был один запрос: join contacts и OR по номеру диалога вместе с полями контакта.
+  # Условие по display_id не даёт использовать индекс контактов, поэтому сканировались все
+  # диалоги вместе с контактами — 23 с только на отбор совпадений.
+  # Ветка по номеру диалога нужна только для чисто числового запроса: display_id это integer,
+  # и текстовое совпадение с подстрокой, где есть буквы или пробелы, невозможно в принципе.
+  def scope_conversations_to_search(scope)
+    return scope.where(contact_id: matching_contact_ids) unless numeric_search_query?
+
+    # Числовой запрос может совпасть и с номером диалога, и с телефоном контакта
+    by_contact = scope.where(contact_id: matching_contact_ids).limit(SEARCH_MATCH_LIMIT).pluck(:id)
+    by_display_id = scope.where('cast(conversations.display_id as text) ILIKE :search', search: search_pattern)
+                         .limit(SEARCH_MATCH_LIMIT).pluck(:id)
+
+    scope.where(id: by_contact | by_display_id)
+  end
+
+  def matching_contact_ids
+    current_account.contacts.where(CONTACT_SEARCH_CONDITION, search: search_pattern)
+                   .select(:id)
+                   .limit(SEARCH_MATCH_LIMIT)
+  end
+
+  def numeric_search_query?
+    search_query.match?(/\A\d+\z/)
+  end
+
+  def search_pattern
+    "%#{search_query}%"
   end
 
   def filter_messages
@@ -162,16 +206,14 @@ class SearchService
   end
 
   def filter_contacts
-    contacts_query = current_account.contacts.where(
-      "name ILIKE :search OR email ILIKE :search OR phone_number
-      ILIKE :search OR identifier ILIKE :search", search: "%#{search_query}%"
-    )
+    matched = current_account.contacts.where(CONTACT_SEARCH_CONDITION, search: search_pattern)
+    matched = apply_time_filter(matched, 'last_activity_at') if current_account.feature_enabled?('advanced_search')
+    matched = matched.resolved_contacts(use_crm_v2: current_account.feature_enabled?('crm_v2'))
 
-    contacts_query = apply_time_filter(contacts_query, 'last_activity_at') if current_account.feature_enabled?('advanced_search')
-
-    @contacts = contacts_query.resolved_contacts(
-      use_crm_v2: current_account.feature_enabled?('crm_v2')
-    ).order_on_last_activity_at('desc').page(params[:page]).per(15)
+    @contacts = current_account.contacts
+                               .where(id: matched.select(:id).limit(SEARCH_MATCH_LIMIT))
+                               .order_on_last_activity_at('desc')
+                               .page(params[:page]).per(15)
   end
 
   def filter_articles

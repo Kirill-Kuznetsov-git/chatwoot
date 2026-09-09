@@ -259,6 +259,58 @@ describe SearchService do
         search = described_class.new(current_user: user, current_account: account, params: params, search_type: 'Conversation')
         expect(search.perform[:conversations].map(&:id)).to include new_converstion.id
       end
+
+      it 'finds conversations by contact phone number' do
+        by_phone = create(:contact, account_id: account.id, phone_number: '+1555000777')
+        phone_conversation = create(:conversation, contact: by_phone, inbox: inbox, account: account)
+
+        params = { q: '555000777' }
+        search = described_class.new(current_user: user, current_account: account, params: params, search_type: 'Conversation')
+        expect(search.perform[:conversations].map(&:id)).to eq([phone_conversation.id])
+      end
+
+      it 'unions display id matches with contact matches for a numeric query' do
+        by_display_id = create(:conversation, contact: harry, inbox: inbox, account: account)
+        digits = by_display_id.display_id.to_s
+        by_phone = create(:contact, account_id: account.id, phone_number: "+1555000#{digits}")
+        by_contact = create(:conversation, contact: by_phone, inbox: inbox, account: account)
+
+        params = { q: digits }
+        search = described_class.new(current_user: user, current_account: account, params: params, search_type: 'Conversation')
+        expect(search.perform[:conversations].map(&:id)).to include(by_display_id.id, by_contact.id)
+      end
+
+      it 'does not match a conversation display id when the query is not numeric' do
+        # display_id это integer: подстрока с буквами совпасть не может, ветку не запускаем
+        random = create(:contact, account_id: account.id, name: 'random', email: 'random@random.test', identifier: 'random')
+        other = create(:conversation, contact: random, inbox: inbox, account: account)
+
+        params = { q: "#{other.display_id}abc" }
+        search = described_class.new(current_user: user, current_account: account, params: params, search_type: 'Conversation')
+        expect(search.perform[:conversations]).to be_empty
+      end
+    end
+
+    context 'when the search matches more records than SEARCH_MATCH_LIMIT' do
+      it 'caps the matched contacts' do
+        stub_const('SearchService::SEARCH_MATCH_LIMIT', 1)
+        create(:contact, name: 'Harry Potter II', email: 'harry2@test.com', account_id: account.id)
+
+        params = { q: 'Potter' }
+        search = described_class.new(current_user: user, current_account: account, params: params, search_type: 'Contact')
+        expect(search.perform[:contacts].size).to eq(1)
+      end
+
+      it 'caps the matched conversations for a numeric query' do
+        stub_const('SearchService::SEARCH_MATCH_LIMIT', 1)
+        by_phone = create(:contact, account_id: account.id, phone_number: '+1555000777')
+        create(:conversation, contact: by_phone, inbox: inbox, account: account)
+        create(:conversation, contact: by_phone, inbox: inbox, account: account)
+
+        params = { q: '555000777' }
+        search = described_class.new(current_user: user, current_account: account, params: params, search_type: 'Conversation')
+        expect(search.perform[:conversations].size).to eq(1)
+      end
     end
 
     context 'when article search' do
