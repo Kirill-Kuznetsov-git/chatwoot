@@ -69,7 +69,7 @@
         "TEXT": "Priority: Highest first"
       },
       "priority_desc_waiting_since_asc": {
-        "TEXT": "Queue: Priority first, longest waiting"
+        "TEXT": "Queue: important & waiting"
       },
       "priority_asc": {
         "TEXT": "Priority: Lowest first"

@@ -54,37 +54,37 @@
     },
     "SORT_ORDER_ITEMS": {
       "last_activity_at_asc": {
-        "TEXT": "Последняя активность: сначала старые"
+        "TEXT": "Активность: старые"
       },
       "last_activity_at_desc": {
-        "TEXT": "Последняя активность: сначала новые"
+        "TEXT": "Активность: новые"
       },
       "created_at_desc": {
-        "TEXT": "Создано: сначала новые"
+        "TEXT": "Создано: новые"
       },
       "created_at_asc": {
-        "TEXT": "Создано: сначала старые"
+        "TEXT": "Создано: старые"
       },
       "priority_desc": {
-        "TEXT": "Приоритет: сначала высокие"
+        "TEXT": "Приоритет: высокие"
       },
       "priority_desc_waiting_since_asc": {
-        "TEXT": "Очередь: приоритет, затем ожидание"
+        "TEXT": "Очередь: важные и ждущие"
       },
       "priority_asc": {
         "TEXT": "Приоритет: сначала низкие"
       },
       "waiting_since_asc": {
-        "TEXT": "Ожидающие ответа: сначала старые"
+        "TEXT": "Ожидание: дольше всех"
       },
       "waiting_since_desc": {
-        "TEXT": "Ожидающие ответа: сначала новые"
+        "TEXT": "Ожидание: недавние"
       },
       "priority_desc_created_at_asc": {
         "TEXT": "Приоритет: Сначала высокие, Создано: Сначала старые"
       },
       "unread": {
-        "TEXT": "Unread Count: Highest first"
+        "TEXT": "Непрочитанных больше"
       }
     },
     "ATTACHMENTS": {

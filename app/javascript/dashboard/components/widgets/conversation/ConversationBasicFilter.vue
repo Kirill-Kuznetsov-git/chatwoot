@@ -63,26 +63,6 @@ const chatStatusOptions = computed(() => [
 
 const chatSortOptions = computed(() => [
   {
-    label: t('CHAT_LIST.SORT_ORDER_ITEMS.last_activity_at_asc.TEXT'),
-    value: 'last_activity_at_asc',
-  },
-  {
-    label: t('CHAT_LIST.SORT_ORDER_ITEMS.last_activity_at_desc.TEXT'),
-    value: 'last_activity_at_desc',
-  },
-  {
-    label: t('CHAT_LIST.SORT_ORDER_ITEMS.created_at_desc.TEXT'),
-    value: 'created_at_desc',
-  },
-  {
-    label: t('CHAT_LIST.SORT_ORDER_ITEMS.created_at_asc.TEXT'),
-    value: 'created_at_asc',
-  },
-  {
-    label: t('CHAT_LIST.SORT_ORDER_ITEMS.unread.TEXT'),
-    value: 'unread',
-  },
-  {
     label: t('CHAT_LIST.SORT_ORDER_ITEMS.priority_desc_waiting_since_asc.TEXT'),
     value: 'priority_desc_waiting_since_asc',
   },
@@ -97,6 +77,26 @@ const chatSortOptions = computed(() => [
   {
     label: t('CHAT_LIST.SORT_ORDER_ITEMS.waiting_since_desc.TEXT'),
     value: 'waiting_since_desc',
+  },
+  {
+    label: t('CHAT_LIST.SORT_ORDER_ITEMS.last_activity_at_desc.TEXT'),
+    value: 'last_activity_at_desc',
+  },
+  {
+    label: t('CHAT_LIST.SORT_ORDER_ITEMS.last_activity_at_asc.TEXT'),
+    value: 'last_activity_at_asc',
+  },
+  {
+    label: t('CHAT_LIST.SORT_ORDER_ITEMS.created_at_asc.TEXT'),
+    value: 'created_at_asc',
+  },
+  {
+    label: t('CHAT_LIST.SORT_ORDER_ITEMS.created_at_desc.TEXT'),
+    value: 'created_at_desc',
+  },
+  {
+    label: t('CHAT_LIST.SORT_ORDER_ITEMS.unread.TEXT'),
+    value: 'unread',
   },
 ]);
 
