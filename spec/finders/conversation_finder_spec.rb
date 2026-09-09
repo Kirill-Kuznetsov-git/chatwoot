@@ -87,6 +87,68 @@ describe ConversationFinder do
       end
     end
 
+    context 'with a conversation owned by an agent bot' do
+      let(:agent_bot) { create(:agent_bot, account: account) }
+      let!(:bot_conversation) do
+        create(:conversation, account: account, inbox: inbox, assignee: nil, assignee_agent_bot: agent_bot)
+      end
+
+      context 'when assignee_type is unassigned' do
+        let(:params) { { assignee_type: 'unassigned' } }
+
+        it 'excludes the bot owned conversation from the list' do
+          result = conversation_finder.perform
+
+          expect(result[:conversations]).not_to include(bot_conversation)
+          expect(result[:conversations].length).to be 1
+        end
+
+        it 'excludes the bot owned conversation from the unassigned count' do
+          result = conversation_finder.perform
+
+          expect(result[:count][:unassigned_count]).to be 1
+          expect(result[:count][:assigned_count]).to be 4
+          expect(result[:count][:all_count]).to be 5
+        end
+
+        it 'keeps the list and the unassigned count in sync' do
+          result = conversation_finder.perform
+
+          expect(result[:conversations].length).to eq(result[:count][:unassigned_count])
+        end
+      end
+
+      context 'when assignee_type is assigned' do
+        let(:params) { { assignee_type: 'assigned' } }
+
+        it 'includes the bot owned conversation' do
+          result = conversation_finder.perform
+
+          expect(result[:conversations]).to include(bot_conversation)
+          expect(result[:conversations].length).to be 4
+        end
+      end
+
+      context 'when the counts fall back to the legacy path' do
+        let(:params) { { assignee_type: 'unassigned', updated_within: 20 } }
+
+        it 'excludes the bot owned conversation from the unassigned count' do
+          result = conversation_finder.perform
+
+          expect(result[:count][:unassigned_count]).to be 1
+        end
+      end
+
+      it 'returns the conversation to the unassigned list after a bot handoff' do
+        bot_conversation.bot_handoff!
+
+        result = described_class.new(user_1, { assignee_type: 'unassigned' }).perform
+
+        expect(result[:conversations]).to include(bot_conversation)
+        expect(result[:count][:unassigned_count]).to be 2
+      end
+    end
+
     context 'with status all' do
       let(:params) { { status: 'all' } }
 

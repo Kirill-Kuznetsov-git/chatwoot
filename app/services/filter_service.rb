@@ -110,7 +110,9 @@ class FilterService
   def set_count_for_all_conversations
     [
       @conversations.assigned_to(@user).count,
-      @conversations.unassigned.count,
+      # Диалог, которым владеет AgentBot, назначенным считает и дашборд, и ConversationFinder —
+      # счётчик сохранённых фильтров должен совпадать с ними (upstream #15343).
+      @conversations.where(assignee_id: nil, assignee_agent_bot_id: nil).count,
       @conversations.count
     ]
   end

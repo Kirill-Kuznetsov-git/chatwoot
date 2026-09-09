@@ -646,6 +646,28 @@ describe Conversations::FilterService do
     end
   end
 
+  describe 'result counts with an agent bot owner' do
+    let!(:account) { create(:account) }
+    let!(:user_1) { create(:user, account: account, role: :administrator) }
+    let!(:inbox_1) { create(:inbox, account: account) }
+    let!(:agent_bot) { create(:agent_bot, account: account) }
+    let!(:params) { { payload: [], page: 1 } }
+
+    before do
+      account.conversations.destroy_all
+      create(:conversation, account: account, inbox: inbox_1, assignee: nil)
+      create(:conversation, account: account, inbox: inbox_1, assignee: nil, assignee_agent_bot: agent_bot)
+    end
+
+    it 'counts a bot owned conversation as assigned' do
+      result = filter_service.new(params, user_1, account).perform
+
+      expect(result[:count][:unassigned_count]).to eq 1
+      expect(result[:count][:assigned_count]).to eq 1
+      expect(result[:count][:all_count]).to eq 2
+    end
+  end
+
   describe '#base_relation' do
     let!(:account) { create(:account) }
     let!(:user_1) { create(:user, account: account, role: :agent) }

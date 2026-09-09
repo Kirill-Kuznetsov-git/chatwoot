@@ -2,6 +2,10 @@ class ConversationFinder
   attr_reader :current_user, :current_account, :params
 
   DEFAULT_STATUS = 'open'.freeze
+  # Диалог во владении AgentBot дашборд показывает назначенным и прячет из «Неназначен»; без этого счётчик
+  # расходится со списком и фронт бесконечно перезапрашивает страницу. Точечный перенос upstream #15343 (4.17.0):
+  # модельные scope'ы unassigned/assigned не трогаем — на них держится автоназначение людям.
+  WITHOUT_OWNER = { assignee_id: nil, assignee_agent_bot_id: nil }.freeze
   SORT_OPTIONS = {
     'last_activity_at_asc' => %w[sort_on_last_activity_at asc],
     'last_activity_at_desc' => %w[sort_on_last_activity_at desc],
@@ -129,9 +133,9 @@ class ConversationFinder
     when 'me'
       @conversations = @conversations.assigned_to(current_user)
     when 'unassigned'
-      @conversations = @conversations.unassigned
+      @conversations = @conversations.where(WITHOUT_OWNER)
     when 'assigned'
-      @conversations = @conversations.assigned
+      @conversations = @conversations.where('conversations.assignee_id IS NOT NULL OR conversations.assignee_agent_bot_id IS NOT NULL')
     end
     @conversations
   end
@@ -189,7 +193,7 @@ class ConversationFinder
 
     counts = @conversations.unscope(:order).pick(
       Arel.sql("COUNT(*) FILTER (WHERE assignee_id = #{current_user.id})"),
-      Arel.sql('COUNT(*) FILTER (WHERE assignee_id IS NULL)'),
+      Arel.sql('COUNT(*) FILTER (WHERE assignee_id IS NULL AND assignee_agent_bot_id IS NULL)'),
       Arel.sql('COUNT(*)')
     )
     counts || [0, 0, 0]
@@ -198,7 +202,7 @@ class ConversationFinder
   def legacy_count_for_all_conversations
     [
       @conversations.assigned_to(current_user).count,
-      @conversations.unassigned.count,
+      @conversations.where(WITHOUT_OWNER).count,
       @conversations.count
     ]
   end
