@@ -55,6 +55,23 @@ class Campaign < ApplicationRecord
   after_commit :set_display_id, unless: :display_id?
   after_destroy_commit :invalidate_filtered_unread_count_filters
 
+  # Результат рассылки: диалог на каждого получателя, ответ — входящее сообщение в нём.
+  def sent_count
+    conversations.count
+  end
+
+  def replied_count
+    conversations.joins(:messages).where(messages: { message_type: Message.message_types[:incoming] }).distinct.count
+  end
+
+  # Сегменты аудитории (сохранённые фильтры контактов) — для отображения в карточке кампании.
+  def audience_segments
+    segment_ids = audience.to_a.select { |item| item['type'] == 'Segment' }.pluck('id')
+    return CustomFilter.none if segment_ids.blank?
+
+    account.custom_filters.contact.where(id: segment_ids)
+  end
+
   def trigger!
     return unless one_off?
     return unless feature_enabled?
@@ -86,6 +103,8 @@ class Campaign < ApplicationRecord
       Sms::OneoffSmsCampaignService.new(campaign: self).perform
     when 'Whatsapp'
       Whatsapp::OneoffCampaignService.new(campaign: self).perform
+    when 'Website'
+      Website::OneoffCampaignService.new(campaign: self).perform
     end
   end
 
@@ -114,6 +133,9 @@ class Campaign < ApplicationRecord
 
     if ['Twilio SMS', 'Sms', 'Whatsapp'].include?(inbox.inbox_type)
       self.campaign_type = 'one_off'
+      self.scheduled_at ||= Time.now.utc
+    elsif one_off?
+      # Проактивная рассылка на сегмент через виджет-инбокс: одноразовая, значит расписание нужно.
       self.scheduled_at ||= Time.now.utc
     else
       self.campaign_type = 'ongoing'

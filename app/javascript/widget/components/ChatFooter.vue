@@ -49,9 +49,11 @@ export default {
       // send another request. See GuestDeliveryNotice.
       if (this.isGuestVisitor) return true;
 
+      // Рассылка приходит закрытым диалогом (SCC-45.13) — ответ на неё пишется в том же
+      // треде и переоткрывает его, поэтому поле ввода прячем только у обычных закрытых.
       const { allowMessagesAfterResolved } = window.chatwootWebChannel;
-      const { status } = this.conversationAttributes;
-      return !allowMessagesAfterResolved && status === 'resolved';
+      const { status, campaignId } = this.conversationAttributes;
+      return !allowMessagesAfterResolved && status === 'resolved' && !campaignId;
     },
     showEmailTranscriptButton() {
       return this.hasEmail;

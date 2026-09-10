@@ -7,7 +7,7 @@ class Api::V1::Widget::CampaignsController < Api::V1::Widget::BaseController
                    @web_widget
                      .inbox
                      .campaigns
-                     .where(enabled: true, account_id: account.id)
+                     .where(enabled: true, account_id: account.id, campaign_type: :ongoing)
                      .includes(:sender)
                  else
                    []

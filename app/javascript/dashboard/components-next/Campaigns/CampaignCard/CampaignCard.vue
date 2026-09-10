@@ -8,6 +8,7 @@ import CardLayout from 'dashboard/components-next/CardLayout.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
 import LiveChatCampaignDetails from './LiveChatCampaignDetails.vue';
 import SMSCampaignDetails from './SMSCampaignDetails.vue';
+import BroadcastCampaignDetails from './BroadcastCampaignDetails.vue';
 
 const props = defineProps({
   title: {
@@ -41,6 +42,18 @@ const props = defineProps({
   scheduledAt: {
     type: Number,
     default: 0,
+  },
+  isBroadcastType: {
+    type: Boolean,
+    default: false,
+  },
+  audienceSegments: {
+    type: Array,
+    default: () => [],
+  },
+  stats: {
+    type: Object,
+    default: () => ({}),
   },
 });
 
@@ -118,6 +131,14 @@ const inboxIcon = computed(() => {
           :sender="sender"
           :inbox-name="inboxName"
           :inbox-icon="inboxIcon"
+        />
+        <BroadcastCampaignDetails
+          v-else-if="isBroadcastType"
+          :inbox-name="inboxName"
+          :inbox-icon="inboxIcon"
+          :scheduled-at="scheduledAt"
+          :audience-segments="audienceSegments"
+          :stats="stats"
         />
         <SMSCampaignDetails
           v-else

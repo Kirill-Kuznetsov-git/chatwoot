@@ -44,6 +44,11 @@ export const getters = {
     const whatsappChannelTypes = [INBOX_TYPES.WHATSAPP];
     return _getters.getCampaigns(CAMPAIGN_TYPES.ONE_OFF, whatsappChannelTypes);
   },
+  // Рассылка на сегмент — one_off на том же Website-инбоксе; ongoing на нём же это
+  // livechat-кампания (показ в виджете по URL-правилам), поэтому различаем по типу.
+  getBroadcastCampaigns: (_state, _getters) => {
+    return _getters.getCampaigns(CAMPAIGN_TYPES.ONE_OFF, [INBOX_TYPES.WEB]);
+  },
   getLiveChatCampaigns: (_state, _getters) => {
     const liveChatChannelTypes = [INBOX_TYPES.WEB];
     return _getters.getCampaigns(CAMPAIGN_TYPES.ONGOING, liveChatChannelTypes);

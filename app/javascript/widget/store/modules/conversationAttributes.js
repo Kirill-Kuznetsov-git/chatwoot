@@ -5,9 +5,13 @@ import {
 } from '../types';
 import { getConversationAPI } from '../../api/conversation';
 
+// campaignId нужен полю ввода: в рассылочном треде (SCC-45.13) отвечать можно и после
+// закрытия. Обновления из ActionCable несут только id и status, поэтому признак
+// перезаписываем лишь когда ключ реально пришёл — иначе он терялся бы при каждом апдейте.
 const state = {
   id: '',
   status: '',
+  campaignId: null,
 };
 
 export const getters = {
@@ -37,16 +41,19 @@ export const mutations = {
   [SET_CONVERSATION_ATTRIBUTES]($state, data) {
     $state.id = data.id;
     $state.status = data.status;
+    $state.campaignId = data.campaign_id ?? null;
   },
   [UPDATE_CONVERSATION_ATTRIBUTES]($state, data) {
     if (data.id === $state.id) {
       $state.id = data.id;
       $state.status = data.status;
+      if ('campaign_id' in data) $state.campaignId = data.campaign_id ?? null;
     }
   },
   [CLEAR_CONVERSATION_ATTRIBUTES]($state) {
     $state.id = '';
     $state.status = '';
+    $state.campaignId = null;
   },
 };
 
