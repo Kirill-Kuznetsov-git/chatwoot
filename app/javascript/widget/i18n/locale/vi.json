@@ -3,6 +3,7 @@
     "WELCOME_TITLE": "Hỗ trợ StarPets",
     "WELCOME_TAGLINE": "Chào bạn! 👋\n\nHãy cho chúng tôi biết chuyện gì đã xảy ra — chúng tôi sẽ giúp bạn giải quyết.\n\nMô tả vấn đề của bạn trong một tin nhắn.",
     "PRE_CHAT_MESSAGE": "Hãy cho chúng tôi biết chuyện gì đã xảy ra. Điều này giúp chuyển tin nhắn của bạn đến đúng nhóm hỗ trợ nhanh hơn.",
+    "GUEST_DELIVERY_NOTICE": "Tin nhắn của bạn đã được gửi đến chúng tôi! Chúng tôi sẽ trả lời qua email.\n\nNếu bạn muốn nói chuyện với nhân viên trực tiếp, hãy đăng nhập trên trang web (tài khoản của bạn).",
     "FIELDS": {
       "emailAddress": "Email",
       "fullName": "Họ và tên",

@@ -37,12 +37,18 @@ export default {
       widgetColor: 'appConfig/getWidgetColor',
       conversationSize: 'conversation/getConversationSize',
       currentUser: 'contacts/getCurrentUser',
+      isGuestVisitor: 'contacts/isGuestVisitor',
       isWidgetStyleFlat: 'appConfig/isWidgetStyleFlat',
     }),
     textColor() {
       return getContrastingTextColor(this.widgetColor);
     },
     hideReplyBox() {
+      // Visitors who are not signed in on the site are answered over email,
+      // not by a live operator, so they get no composer — only the button to
+      // send another request. See GuestDeliveryNotice.
+      if (this.isGuestVisitor) return true;
+
       const { allowMessagesAfterResolved } = window.chatwootWebChannel;
       const { status } = this.conversationAttributes;
       return !allowMessagesAfterResolved && status === 'resolved';

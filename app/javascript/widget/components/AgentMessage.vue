@@ -14,6 +14,7 @@ import { isASubmittedFormMessage } from 'shared/helpers/MessageTypeHelper';
 import ReplyToChip from 'widget/components/ReplyToChip.vue';
 import { BUS_EVENTS } from 'shared/constants/busEvents';
 import { emitter } from 'shared/helpers/mitt';
+import { mapGetters } from 'vuex';
 
 export default {
   name: 'AgentMessage',
@@ -45,6 +46,9 @@ export default {
     };
   },
   computed: {
+    ...mapGetters({
+      isGuestVisitor: 'contacts/isGuestVisitor',
+    }),
     shouldDisplayAgentMessage() {
       if (
         this.contentType === 'input_select' &&
@@ -259,6 +263,7 @@ export default {
           </div>
           <div class="flex flex-col justify-end">
             <MessageReplyButton
+              v-if="!isGuestVisitor"
               class="transition-opacity delay-75 opacity-0 group-hover:opacity-100 sm:opacity-0"
               @click="toggleReply"
             />

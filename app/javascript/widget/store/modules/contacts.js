@@ -1,4 +1,4 @@
-import { sendMessage } from 'widget/helpers/utils';
+import { isEmptyObject, sendMessage } from 'widget/helpers/utils';
 import ContactsAPI from '../../api/contacts';
 import { SET_USER_ERROR } from '../../constants/errorTypes';
 import { setHeader } from '../../helpers/axios';
@@ -22,6 +22,12 @@ export const updateWidgetAuthToken = widgetAuthToken => {
 export const getters = {
   getCurrentUser(_state) {
     return _state.currentUser;
+  },
+  // A visitor stays a guest until the site identifies them through setUser.
+  // An empty contact means it hasn't loaded yet — not a guest, so the guest
+  // treatment never flashes for a signed-in visitor.
+  isGuestVisitor(_state) {
+    return !isEmptyObject(_state.currentUser) && !_state.currentUser.identifier;
   },
 };
 

@@ -1,6 +1,7 @@
 <script>
 import ChatMessage from 'widget/components/ChatMessage.vue';
 import AgentTypingBubble from 'widget/components/AgentTypingBubble.vue';
+import GuestDeliveryNotice from 'widget/components/GuestDeliveryNotice.vue';
 import DateSeparator from 'shared/components/DateSeparator.vue';
 import Spinner from 'shared/components/Spinner.vue';
 import { useDarkMode } from 'widget/composables/useDarkMode';
@@ -12,6 +13,7 @@ export default {
   components: {
     ChatMessage,
     AgentTypingBubble,
+    GuestDeliveryNotice,
     DateSeparator,
     Spinner,
   },
@@ -40,7 +42,21 @@ export default {
       conversationSize: 'conversation/getConversationSize',
       isAgentTyping: 'conversation/getIsAgentTyping',
       conversationAttributes: 'conversationAttributes/getConversationParams',
+      messages: 'conversation/getConversation',
+      isGuestVisitor: 'contacts/isGuestVisitor',
     }),
+    // Visitors who are not signed in on the site are answered over email, so
+    // they get a notice saying so. It stays until support actually replies in
+    // the widget, to never contradict a message the visitor can already see.
+    showGuestDeliveryNotice() {
+      if (!this.isGuestVisitor || !this.conversationSize) return false;
+
+      return !Object.values(this.messages).some(message =>
+        [MESSAGE_TYPE.OUTGOING, MESSAGE_TYPE.TEMPLATE].includes(
+          message.message_type
+        )
+      );
+    },
     colorSchemeClass() {
       return `${this.darkMode === 'dark' ? 'dark-scheme' : 'light-scheme'}`;
     },
@@ -116,6 +132,7 @@ export default {
           :message="message"
         />
       </div>
+      <GuestDeliveryNotice v-if="showGuestDeliveryNotice" />
       <AgentTypingBubble v-if="showStatusIndicator" />
     </div>
   </div>
