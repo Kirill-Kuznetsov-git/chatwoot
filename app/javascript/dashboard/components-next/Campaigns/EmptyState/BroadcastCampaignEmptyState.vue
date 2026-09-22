@@ -14,5 +14,9 @@ defineProps({
 </script>
 
 <template>
-  <EmptyStateLayout :title="title" :subtitle="subtitle" :show-backdrop="false" />
+  <EmptyStateLayout
+    :title="title"
+    :subtitle="subtitle"
+    :show-backdrop="false"
+  />
 </template>

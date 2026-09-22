@@ -41,7 +41,9 @@ const repliedCount = computed(() => props.stats?.replied ?? 0);
   <span class="flex-shrink-0 text-sm text-n-slate-11 whitespace-nowrap">
     {{ t('CAMPAIGN.BROADCAST.CARD.CAMPAIGN_DETAILS.SEGMENT') }}
   </span>
-  <span class="flex-shrink-0 max-w-40 text-sm font-medium truncate text-n-slate-12">
+  <span
+    class="flex-shrink-0 max-w-40 text-sm font-medium truncate text-n-slate-12"
+  >
     {{ segmentNames }}
   </span>
 

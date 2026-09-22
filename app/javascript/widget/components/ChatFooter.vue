@@ -52,7 +52,9 @@ export default {
       // треде и переоткрывает его, поэтому поле ввода прячем только у обычных закрытых.
       const { allowMessagesAfterResolved } = window.chatwootWebChannel;
       const { status, campaignId } = this.conversationAttributes;
-      return !allowMessagesAfterResolved && status === 'resolved' && !campaignId;
+      return (
+        !allowMessagesAfterResolved && status === 'resolved' && !campaignId
+      );
     },
     showEmailTranscriptButton() {
       return this.hasEmail;

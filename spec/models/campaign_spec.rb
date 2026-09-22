@@ -195,10 +195,17 @@ RSpec.describe Campaign do
     context 'when Website campaign' do
       let(:campaign) { build(:campaign) }
 
-      it 'only saves campaign type as ongoing' do
-        campaign.campaign_type = 'one_off'
+      it 'saves campaign type as ongoing by default' do
         campaign.save!
         expect(campaign.reload.campaign_type).to eq 'ongoing'
+      end
+
+      # Рассылка на сегмент (SCC-45.13): one_off на виджет-инбоксе допустим и требует расписания.
+      it 'keeps one_off when set explicitly and schedules it' do
+        campaign.campaign_type = 'one_off'
+        campaign.save!
+        expect(campaign.reload.campaign_type).to eq 'one_off'
+        expect(campaign.scheduled_at).to be_present
       end
     end
   end

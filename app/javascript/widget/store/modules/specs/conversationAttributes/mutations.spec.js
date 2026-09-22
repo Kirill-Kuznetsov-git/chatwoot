@@ -8,7 +8,12 @@ describe('#mutations', () => {
         id: 1,
         status: 'open',
       });
-      expect(state).toEqual({ id: 1, status: 'open' });
+      expect(state).toEqual({
+        id: 1,
+        status: 'open',
+        campaignId: null,
+        guestEmailOnly: false,
+      });
     });
   });
 
@@ -38,7 +43,12 @@ describe('#mutations', () => {
         id: 1,
         status: 'open',
       });
-      expect(state).toEqual({ id: '', status: '' });
+      expect(state).toEqual({
+        id: '',
+        status: '',
+        campaignId: null,
+        guestEmailOnly: false,
+      });
     });
   });
 });
