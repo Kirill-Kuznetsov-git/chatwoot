@@ -26,11 +26,14 @@ const ROLE_LETTERS = { Buyer: 'B', Seller: 'S', Trader: 'T', Newcomer: 'N' };
 const BIG_TIER = 'Big';
 
 const segment = computed(
-  () => props.conversation?.careSegment ?? props.conversation?.care_segment ?? {}
+  () =>
+    props.conversation?.careSegment ?? props.conversation?.care_segment ?? {}
 );
 
 const weight = computed(() => segment.value.weight ?? null);
-const tier = computed(() => segment.value.tier90d ?? segment.value.tier_90d ?? null);
+const tier = computed(
+  () => segment.value.tier90d ?? segment.value.tier_90d ?? null
+);
 const role = computed(() => segment.value.role ?? null);
 
 // Big Fish попадает в список и по 90-дневному уровню: активный середняк тоже важен оператору.

@@ -5,6 +5,12 @@
 # Контакты без сегмента пропускаем: после синка сегмента их догонит Care::Queue::ContactJob.
 class CareQueueListener < BaseListener
   def conversation_created(event)
+    # Рассылочный диалог (Website::OneoffCampaignService) создаётся сразу resolved и оператору
+    # не адресован — классифицируем его только когда контакт ответит (conversation_opened),
+    # иначе рассылка на сегмент залила бы очередь бесполезными задачами.
+    conversation = extract_conversation_and_account(event)[0]
+    return if conversation&.campaign_id.present? && conversation.resolved?
+
     enqueue(event, 'conversation_created')
   end
 

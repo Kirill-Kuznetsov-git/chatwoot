@@ -45,6 +45,7 @@ export default {
   computed: {
     ...mapGetters({
       widgetColor: 'appConfig/getWidgetColor',
+      isGuestEmailOnly: 'conversationAttributes/isGuestEmailOnly',
     }),
 
     isInProgress() {
@@ -115,7 +116,7 @@ export default {
         <div class="flex justify-end gap-1">
           <div class="flex flex-col justify-end">
             <MessageReplyButton
-              v-if="!isInProgress && !isFailed"
+              v-if="!isInProgress && !isFailed && !isGuestEmailOnly"
               class="transition-opacity delay-75 opacity-0 group-hover:opacity-100 sm:opacity-0"
               @click="toggleReply"
             />

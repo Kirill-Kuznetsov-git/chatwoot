@@ -8,12 +8,6 @@ const {
 } = window.globalConfig || {};
 
 export default {
-  props: {
-    disableBranding: {
-      type: Boolean,
-      default: false,
-    },
-  },
   setup() {
     const { replaceInstallationName } = useBranding();
     return {
@@ -52,10 +46,7 @@ export default {
 </script>
 
 <template>
-  <div
-    v-if="false"
-    class="px-0 py-3 flex justify-center"
-  >
+  <div v-if="false" class="px-0 py-3 flex justify-center">
     <a
       :href="brandRedirectURL"
       rel="noreferrer noopener nofollow"

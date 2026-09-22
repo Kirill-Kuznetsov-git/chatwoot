@@ -1,6 +1,7 @@
 <script>
 import ChatMessage from 'widget/components/ChatMessage.vue';
 import AgentTypingBubble from 'widget/components/AgentTypingBubble.vue';
+import GuestDeliveryNotice from 'widget/components/GuestDeliveryNotice.vue';
 import DateSeparator from 'shared/components/DateSeparator.vue';
 import Spinner from 'shared/components/Spinner.vue';
 import { useDarkMode } from 'widget/composables/useDarkMode';
@@ -12,6 +13,7 @@ export default {
   components: {
     ChatMessage,
     AgentTypingBubble,
+    GuestDeliveryNotice,
     DateSeparator,
     Spinner,
   },
@@ -40,7 +42,24 @@ export default {
       conversationSize: 'conversation/getConversationSize',
       isAgentTyping: 'conversation/getIsAgentTyping',
       conversationAttributes: 'conversationAttributes/getConversationParams',
+      messages: 'conversation/getConversation',
+      isGuestEmailOnly: 'conversationAttributes/isGuestEmailOnly',
     }),
+    // Гостевой email-only диалог получает отбивку «ответим на email». Она висит,
+    // пока в виджете не ответит человек — чтобы не спорить с сообщением, которое
+    // посетитель уже видит.
+    // Бот гостям отвечать не должен, поэтому его сообщения и приветствие инбокса
+    // (template) отбивку не снимают — иначе она исчезала бы до того, как её прочитают.
+    // sender.type: 'user' — агент, 'agent_bot' — бот; без sender — не человек.
+    showGuestDeliveryNotice() {
+      if (!this.isGuestEmailOnly || !this.conversationSize) return false;
+
+      return !Object.values(this.messages).some(
+        message =>
+          message.message_type === MESSAGE_TYPE.OUTGOING &&
+          message.sender?.type === 'user'
+      );
+    },
     colorSchemeClass() {
       return `${this.darkMode === 'dark' ? 'dark-scheme' : 'light-scheme'}`;
     },
@@ -116,6 +135,7 @@ export default {
           :message="message"
         />
       </div>
+      <GuestDeliveryNotice v-if="showGuestDeliveryNotice" />
       <AgentTypingBubble v-if="showStatusIndicator" />
     </div>
   </div>

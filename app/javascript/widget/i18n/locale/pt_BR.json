@@ -3,6 +3,7 @@
     "WELCOME_TITLE": "Suporte StarPets",
     "WELCOME_TAGLINE": "Oi! 👋\n\nConta pra gente o que aconteceu — vamos te ajudar a resolver.\n\nDescreve seu problema em uma única mensagem.",
     "PRE_CHAT_MESSAGE": "Conta o que aconteceu. Isso ajuda a gente a encaminhar sua mensagem pro time de suporte certo mais rápido.",
+    "GUEST_DELIVERY_NOTICE": "Sua mensagem chegou pra gente! Vamos responder por email.\n\nSe quiser falar com um atendente ao vivo, entre na sua conta no site.",
     "FIELDS": {
       "emailAddress": "E-mail",
       "fullName": "Nome completo",

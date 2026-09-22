@@ -268,3 +268,7 @@
   display_name: WhatsApp Embedded Signup Flow
   enabled: false
   column: feature_flags_ext_1
+- name: guest_email_only
+  display_name: Guest email-only widget
+  enabled: false
+  column: feature_flags_ext_1

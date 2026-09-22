@@ -12,11 +12,12 @@ class Api::V1::Widget::ConversationsController < Api::V1::Widget::BaseController
     if @contact_inbox.nil?
       @conversations = []
     else
-      @conversations = conversations.where(status: %i[open pending]).order(last_activity_at: :desc).limit(20)
+      @conversations = listable_conversations.order(last_activity_at: :desc).limit(20)
     end
   end
 
   def create
+    @guest_session = guest_session? # до мержа по email, см. BaseController#guest_session?
     ActiveRecord::Base.transaction do
       process_update_contact
       @conversation = create_conversation
@@ -85,6 +86,14 @@ class Api::V1::Widget::ConversationsController < Api::V1::Widget::BaseController
   end
 
   private
+
+  # Рассылки (Website::OneoffCampaignService) создаются resolved, чтобы не залить очередь
+  # операторам, но клиент должен увидеть их в виджете — поэтому закрытые кампанийные диалоги
+  # показываем тоже. Ответ в таком треде переоткрывает диалог штатной логикой.
+  def listable_conversations
+    base = conversations
+    base.where(status: %i[open pending]).or(base.where(status: :resolved).where.not(campaign_id: nil))
+  end
 
   def send_transcript_email
     return if conversation.contact&.email.blank?

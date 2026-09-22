@@ -37,15 +37,24 @@ export default {
       widgetColor: 'appConfig/getWidgetColor',
       conversationSize: 'conversation/getConversationSize',
       currentUser: 'contacts/getCurrentUser',
+      isGuestEmailOnly: 'conversationAttributes/isGuestEmailOnly',
       isWidgetStyleFlat: 'appConfig/isWidgetStyleFlat',
     }),
     textColor() {
       return getContrastingTextColor(this.widgetColor);
     },
     hideReplyBox() {
+      // Диалог, начатый гостем при включённом флаге, идёт только через email —
+      // без композера, только кнопка нового обращения. См. GuestDeliveryNotice.
+      if (this.isGuestEmailOnly) return true;
+
+      // Рассылка приходит закрытым диалогом (SCC-45.13) — ответ на неё пишется в том же
+      // треде и переоткрывает его, поэтому поле ввода прячем только у обычных закрытых.
       const { allowMessagesAfterResolved } = window.chatwootWebChannel;
-      const { status } = this.conversationAttributes;
-      return !allowMessagesAfterResolved && status === 'resolved';
+      const { status, campaignId } = this.conversationAttributes;
+      return (
+        !allowMessagesAfterResolved && status === 'resolved' && !campaignId
+      );
     },
     showEmailTranscriptButton() {
       return this.hasEmail;

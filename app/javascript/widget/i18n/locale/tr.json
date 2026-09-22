@@ -3,6 +3,7 @@
     "WELCOME_TITLE": "StarPets Destek",
     "WELCOME_TAGLINE": "Selam! 👋\n\nAnlat bakalım, ne oldu — birlikte çözeriz.\n\nSorununu tek mesajda anlatıver.",
     "PRE_CHAT_MESSAGE": "Ne olduğunu anlat. Böylece talebini ilgili uzmana daha hızlı iletebiliriz.",
+    "GUEST_DELIVERY_NOTICE": "Mesajın bize ulaştı! E-posta ile döneceğiz.\n\nCanlı bir temsilciyle görüşmek istersen siteye giriş yap (hesabın).",
     "FIELDS": {
       "emailAddress": "E-posta",
       "fullName": "Ad Soyad",

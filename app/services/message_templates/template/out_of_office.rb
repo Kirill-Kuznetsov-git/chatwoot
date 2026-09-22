@@ -4,6 +4,8 @@ class MessageTemplates::Template::OutOfOffice
   # StarPets: out-of-office sent in the USER's language (contact locale / browser
   # language), not the inbox's static language. Falls back to the inbox
   # out_of_office_message when the language is unknown / not localized here.
+  # Тексты на языках пользователя: переносить их некуда, длина строк здесь осмысленна.
+  # rubocop:disable Layout/LineLength
   LOCALIZED_MESSAGES = {
     'en' => "Hey! 👋 Our operators are offline right now, but we got your message. A GPT StarPets consultant will assist you now, and an operator will step in if needed.\n\nPlease describe what happened. If this is about a payment, withdrawal, or order, you can also send the order ID or the last 7 characters of the transaction ID.\nWe’ll get back to you during working hours.",
     'ru' => "Сейчас операторов нет на линии, но мы получили твоё сообщение. Сейчас вам поможет GPT-консультант StarPets, а если понадобится, то подключится оператор.\n\nОпиши, пожалуйста, что случилось. Если вопрос про оплату, вывод или заказ — сразу пришли ID заказа или последние 7 символов ID транзакции.\nМы вернёмся с ответом в рабочее время.",
@@ -21,6 +23,7 @@ class MessageTemplates::Template::OutOfOffice
     'id' => "Hai! 👋 Operator kami sedang offline saat ini, tapi kami sudah menerima pesanmu. Konsultan GPT StarPets akan membantumu sekarang, dan operator akan ikut jika diperlukan.\n\nCeritakan apa yang terjadi. Jika ini soal pembayaran, penarikan, atau pesanan, kamu juga bisa mengirim ID pesanan atau 7 karakter terakhir dari ID transaksi.\nKami akan membalas pada jam kerja.",
     'pt_BR' => "Oi! 👋 Nossos operadores estão offline agora, mas recebemos sua mensagem. Um consultor GPT da StarPets vai te ajudar agora e, se precisar, um operador entra em ação.\n\nConta pra gente o que aconteceu. Se for sobre pagamento, saque ou pedido, você também pode enviar o ID do pedido ou os últimos 7 caracteres do ID da transação.\nVamos te responder no horário de trabalho."
   }.freeze
+  # rubocop:enable Layout/LineLength
 
   def self.perform_if_applicable(conversation)
     inbox = conversation.inbox
@@ -68,6 +71,7 @@ class MessageTemplates::Template::OutOfOffice
     raw = (@conversation.contact&.custom_attributes&.dig('language').presence ||
            @conversation.additional_attributes&.dig('browser_language').presence).to_s.strip.downcase
     return nil if raw.blank?
+
     # известный алиас (vn→vi, es-mx→es, pt-br→pt_BR), иначе базовый код без региона
     (LOCALE_ALIASES[raw] || raw.split(/[-_]/).first).presence
   end

@@ -710,6 +710,11 @@ const menuItems = computed(() => {
           to: accountScopedRoute('campaigns_livechat_index'),
         },
         {
+          name: 'Broadcasts',
+          label: t('SIDEBAR.BROADCASTS'),
+          to: accountScopedRoute('campaigns_broadcast_index'),
+        },
+        {
           name: 'SMS',
           label: t('SIDEBAR.SMS'),
           to: accountScopedRoute('campaigns_sms_index'),

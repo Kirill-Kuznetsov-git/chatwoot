@@ -3,6 +3,7 @@
     "WELCOME_TITLE": "StarPets Support",
     "WELCOME_TAGLINE": "Kumusta! 👋\n\nSabihin sa amin kung ano ang nangyari — tutulungan ka naming ayusin ito.\n\nIlarawan ang iyong problema sa isang mensahe.",
     "PRE_CHAT_MESSAGE": "Sabihin sa amin kung ano ang nangyari. Nakakatulong ito para mas mabilis na maipadala ang iyong mensahe sa tamang support team.",
+    "GUEST_DELIVERY_NOTICE": "Natanggap na namin ang mensahe mo! Sasagot kami sa email.\n\nKung gusto mong makausap ang isang live agent, mag-sign in sa site (ang account mo).",
     "FIELDS": {
       "emailAddress": "Email",
       "fullName": "Buong pangalan",

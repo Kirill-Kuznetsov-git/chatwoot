@@ -1,5 +1,64 @@
 {
   "CAMPAIGN": {
+    "BROADCAST": {
+      "HEADER_TITLE": "Broadcasts",
+      "NEW_CAMPAIGN": "Create broadcast",
+      "EMPTY_STATE": {
+        "TITLE": "No broadcasts yet",
+        "SUBTITLE": "Send an announcement, a survey or important news to a saved contact segment. Recipients see it in the chat widget and get it as an email from the selected inbox; their replies land back in the same conversation."
+      },
+      "CARD": {
+        "CAMPAIGN_DETAILS": {
+          "SEGMENT": "Segment",
+          "ON": "on",
+          "RESULT": "{sent} sent · {replied} replied"
+        }
+      },
+      "CREATE": {
+        "TITLE": "Create broadcast",
+        "FORM": {
+          "TITLE": {
+            "LABEL": "Title",
+            "PLACEHOLDER": "Please enter the title of broadcast",
+            "ERROR": "Title is required"
+          },
+          "MESSAGE": {
+            "LABEL": "Message",
+            "PLACEHOLDER": "Please enter the message to send",
+            "ERROR": "Message is required"
+          },
+          "INBOX": {
+            "LABEL": "Select Inbox",
+            "PLACEHOLDER": "Select Inbox",
+            "ERROR": "Inbox is required"
+          },
+          "SENT_BY": {
+            "LABEL": "Sent by",
+            "PLACEHOLDER": "Select the sender",
+            "ERROR": "Sender is required"
+          },
+          "SEGMENT": {
+            "LABEL": "Segment",
+            "PLACEHOLDER": "Select a contact segment",
+            "HINT": "Segments are saved contact filters from the Contacts page.",
+            "ERROR": "Segment is required"
+          },
+          "SCHEDULED_AT": {
+            "LABEL": "Scheduled time",
+            "PLACEHOLDER": "Please select the time",
+            "ERROR": "Scheduled time is required"
+          },
+          "BUTTONS": {
+            "CREATE": "Create",
+            "CANCEL": "Cancel"
+          },
+          "API": {
+            "SUCCESS_MESSAGE": "Broadcast created successfully",
+            "ERROR_MESSAGE": "There was an error. Please try again."
+          }
+        }
+      }
+    },
     "LIVE_CHAT": {
       "HEADER_TITLE": "Live chat campaigns",
       "NEW_CAMPAIGN": "Create campaign",

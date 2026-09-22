@@ -5,13 +5,23 @@ import {
 } from '../types';
 import { getConversationAPI } from '../../api/conversation';
 
+// campaignId нужен полю ввода: в рассылочном треде (SCC-45.13) отвечать можно и после
+// закрытия. Обновления из ActionCable несут только id и status, поэтому признак
+// перезаписываем лишь когда ключ реально пришёл — иначе он терялся бы при каждом апдейте.
 const state = {
   id: '',
   status: '',
+  campaignId: null,
+  guestEmailOnly: false,
 };
 
 export const getters = {
   getConversationParams: $state => $state,
+  // Гостевой email-only режим действует только при обоих условиях: признак на самом
+  // диалоге (сервер ставит его при создании, старые диалоги его не имеют) и включённый
+  // флаг аккаунта в конфиге виджета. Выключили флаг — разморожены все, включая помеченные.
+  isGuestEmailOnly: $state =>
+    Boolean($state.guestEmailOnly && window.chatwootWebChannel?.guestEmailOnly),
 };
 
 export const actions = {
@@ -37,16 +47,24 @@ export const mutations = {
   [SET_CONVERSATION_ATTRIBUTES]($state, data) {
     $state.id = data.id;
     $state.status = data.status;
+    $state.campaignId = data.campaign_id ?? null;
+    $state.guestEmailOnly = data.guest_email_only === true;
   },
   [UPDATE_CONVERSATION_ATTRIBUTES]($state, data) {
     if (data.id === $state.id) {
       $state.id = data.id;
       $state.status = data.status;
+      if ('campaign_id' in data) $state.campaignId = data.campaign_id ?? null;
+      if ('guest_email_only' in data) {
+        $state.guestEmailOnly = data.guest_email_only === true;
+      }
     }
   },
   [CLEAR_CONVERSATION_ATTRIBUTES]($state) {
     $state.id = '';
     $state.status = '';
+    $state.campaignId = null;
+    $state.guestEmailOnly = false;
   },
 };
 

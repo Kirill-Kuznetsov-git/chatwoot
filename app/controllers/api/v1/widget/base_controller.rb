@@ -54,9 +54,29 @@ class Api::V1::Widget::BaseController < ApplicationController
         browser: browser_params,
         initiated_at: timestamp_params,
         referer: permitted_params[:message][:referer_url]
-      },
+      }.merge(guest_email_only_attribute),
       custom_attributes: permitted_params[:custom_attributes].presence || {}
     }
+  end
+
+  # Гость (сайт не вызвал setUser) при включённом флаге аккаунта общается только через email.
+  # Признак ставим на диалог в момент создания, а не вычисляем по контакту при рендере: так уже
+  # существующие диалоги никогда не запираются, а сбой setUser позже не замораживает живой чат.
+  def guest_email_only_attribute
+    return {} unless inbox.account.feature_enabled?('guest_email_only') && guest_session?
+
+    { guest_email_only: true }
+  end
+
+  # Гость — сессия виджета без identifier. Решать надо по контакту ДО идентификации по email:
+  # ContactIdentifyAction при пустом identifier мержит анонимного гостя в существующий контакт с
+  # таким же email, и после мержа @contact может оказаться зарегистрированным пользователем,
+  # хотя сессия по-прежнему гостевая. Кто создаёт диалог после идентификации — фиксирует
+  # @guest_session заранее; остальным путям хватает текущего состояния контакта.
+  def guest_session?
+    return @guest_session unless @guest_session.nil?
+
+    @contact.identifier.blank?
   end
 
   def contact_email

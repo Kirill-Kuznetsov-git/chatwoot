@@ -31,11 +31,7 @@ class Integrations::Openai::TranslateService
     return if content.blank? || target_language.blank?
     return if api_key.blank?
 
-    Llm::Config.with_api_key(api_key, api_base: api_base) do |context|
-      chat = context.chat(model: MODEL)
-      chat.with_instructions(system_prompt)
-      chat.ask(content).content
-    end
+    translate!
   rescue RubyLLM::RateLimitError, RubyLLM::ServerError, RubyLLM::ServiceUnavailableError,
          RubyLLM::OverloadedError, Faraday::TimeoutError, Faraday::ConnectionFailed => e
     Rails.logger.warn("[OpenaiTranslate] transient #{e.class}: #{e.message} — retrying")
@@ -46,6 +42,14 @@ class Integrations::Openai::TranslateService
   end
 
   private
+
+  def translate!
+    Llm::Config.with_api_key(api_key, api_base: api_base) do |context|
+      chat = context.chat(model: MODEL)
+      chat.with_instructions(system_prompt)
+      chat.ask(content).content
+    end
+  end
 
   # Сообщение уже на языке оператора — обычный случай, а не исключение: оператор
   # и клиент часто пишут на одном языке. Прежняя формулировка «translate into X»
