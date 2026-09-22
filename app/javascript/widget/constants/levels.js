@@ -4,5 +4,7 @@
 export const L1_LABEL_PREFIX = 'l1';
 export const L2_LABEL_PREFIX = 'l2';
 
-export const hasLabelWithPrefix = (labels = [], prefix) =>
-  Array.isArray(labels) && labels.some(label => label && label.startsWith(prefix));
+// Без значения по умолчанию у labels: default-param-last, а Array.isArray и так отсекает undefined.
+export const hasLabelWithPrefix = (labels, prefix) =>
+  Array.isArray(labels) &&
+  labels.some(label => label && label.startsWith(prefix));
