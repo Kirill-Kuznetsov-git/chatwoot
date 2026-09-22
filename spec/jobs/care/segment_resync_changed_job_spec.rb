@@ -38,11 +38,14 @@ RSpec.describe Care::SegmentResyncChangedJob do
   end
 
   it 'respects the account restriction and an explicit since' do
-    allow(client).to receive(:changed_user_ids).with(since: Time.zone.parse('2026-09-07T00:00:00Z'), after_id: nil, limit: 1000)
+    # since внутри окна LOOKBACK относительно «сейчас»: фиксированная дата протухает, как только
+    # уезжает за окно — job подрезает её до LOOKBACK.ago, и стаб перестаёт совпадать.
+    since = 2.days.ago.beginning_of_day
+    allow(client).to receive(:changed_user_ids).with(since: since, after_id: nil, limit: 1000)
                                                .and_return({ 'user_ids' => ids, 'next_after_id' => nil })
 
     stats = with_modified_env(env.merge(CARE_SEGMENT_SYNC_ACCOUNT_ID: account.id.to_s)) do
-      described_class.perform_now('2026-09-07T00:00:00Z')
+      described_class.perform_now(since.iso8601)
     end
 
     expect(stats).to eq(pages: 1, ids: 4, contacts: 2)
