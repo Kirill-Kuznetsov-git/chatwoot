@@ -7,6 +7,44 @@ describe Messages::SendEmailNotificationService do
   let(:service) { described_class.new(message: message) }
 
   describe '#perform' do
+    # Гостевые и рассылочные диалоги живут на почте по замыслу — им письмо уходит даже при
+    # выключенной continuity_via_email; обычным диалогам того же инбокса — нет.
+    context 'when continuity via email is disabled on the widget inbox' do
+      let(:channel) { create(:channel_widget, account: account, continuity_via_email: false) }
+      let(:inbox) { create(:inbox, account: account, channel: channel) }
+
+      before do
+        conversation.contact.update!(email: 'test@example.com')
+        allow(Redis::Alfred).to receive(:set).and_return(true)
+        ActiveJob::Base.queue_adapter = :test
+      end
+
+      context 'with a regular conversation' do
+        let(:conversation) { create(:conversation, account: account, inbox: inbox) }
+
+        it 'does not enqueue job' do
+          expect { service.perform }.not_to have_enqueued_job(ConversationReplyEmailJob)
+        end
+      end
+
+      context 'with a guest email-only conversation' do
+        let(:conversation) { create(:conversation, account: account, inbox: inbox, additional_attributes: { guest_email_only: true }) }
+
+        it 'enqueues ConversationReplyEmailJob' do
+          expect { service.perform }.to have_enqueued_job(ConversationReplyEmailJob).with(conversation.id, message.id)
+        end
+      end
+
+      context 'with a broadcast campaign conversation' do
+        let(:campaign) { create(:campaign, account: account, inbox: inbox) }
+        let(:conversation) { create(:conversation, account: account, inbox: inbox, campaign: campaign) }
+
+        it 'enqueues ConversationReplyEmailJob' do
+          expect { service.perform }.to have_enqueued_job(ConversationReplyEmailJob).with(conversation.id, message.id)
+        end
+      end
+    end
+
     context 'when email notification should be sent' do
       let(:inbox) { create(:inbox, account: account, channel: create(:channel_widget, account: account, continuity_via_email: true)) }
       let(:conversation) { create(:conversation, account: account, inbox: inbox) }

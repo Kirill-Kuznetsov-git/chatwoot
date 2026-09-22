@@ -30,11 +30,20 @@ class Messages::SendEmailNotificationService
     inbox = message.inbox
     case inbox.channel.class.to_s
     when 'Channel::WebWidget'
-      inbox.channel.continuity_via_email
+      inbox.channel.continuity_via_email || email_only_conversation?
     when 'Channel::Api'
       inbox.account.feature_enabled?('email_continuity_on_api_channel')
     else
       false
     end
+  end
+
+  # Гостевые (guest_email_only) и рассылочные (campaign_id) диалоги живут на почте по замыслу:
+  # у гостя нет поля ввода, получатель рассылки не на сайте. Им письмо уходит даже при выключенной
+  # continuity_via_email инбокса. Остальным диалогам поведение инбокса не меняем — иначе письмом
+  # уходил бы каждый ответ бота всем клиентам виджета, ради чего continuity и выключали.
+  def email_only_conversation?
+    conversation = message.conversation
+    conversation.campaign_id.present? || conversation.additional_attributes.to_h['guest_email_only'] == true
   end
 end
