@@ -47,7 +47,7 @@ export default {
   },
   computed: {
     ...mapGetters({
-      isGuestVisitor: 'contacts/isGuestVisitor',
+      isGuestEmailOnly: 'conversationAttributes/isGuestEmailOnly',
     }),
     shouldDisplayAgentMessage() {
       if (
@@ -263,7 +263,7 @@ export default {
           </div>
           <div class="flex flex-col justify-end">
             <MessageReplyButton
-              v-if="!isGuestVisitor"
+              v-if="!isGuestEmailOnly"
               class="transition-opacity delay-75 opacity-0 group-hover:opacity-100 sm:opacity-0"
               @click="toggleReply"
             />

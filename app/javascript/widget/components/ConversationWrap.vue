@@ -43,16 +43,16 @@ export default {
       isAgentTyping: 'conversation/getIsAgentTyping',
       conversationAttributes: 'conversationAttributes/getConversationParams',
       messages: 'conversation/getConversation',
-      isGuestVisitor: 'contacts/isGuestVisitor',
+      isGuestEmailOnly: 'conversationAttributes/isGuestEmailOnly',
     }),
-    // Visitors who are not signed in on the site are answered over email, so
-    // they get a notice saying so. It stays until a human agent replies in the
-    // widget, to never contradict a message the visitor can already see.
+    // Гостевой email-only диалог получает отбивку «ответим на email». Она висит,
+    // пока в виджете не ответит человек — чтобы не спорить с сообщением, которое
+    // посетитель уже видит.
     // Бот гостям отвечать не должен, поэтому его сообщения и приветствие инбокса
     // (template) отбивку не снимают — иначе она исчезала бы до того, как её прочитают.
     // sender.type: 'user' — агент, 'agent_bot' — бот; без sender — не человек.
     showGuestDeliveryNotice() {
-      if (!this.isGuestVisitor || !this.conversationSize) return false;
+      if (!this.isGuestEmailOnly || !this.conversationSize) return false;
 
       return !Object.values(this.messages).some(
         message =>

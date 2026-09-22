@@ -37,17 +37,16 @@ export default {
       widgetColor: 'appConfig/getWidgetColor',
       conversationSize: 'conversation/getConversationSize',
       currentUser: 'contacts/getCurrentUser',
-      isGuestVisitor: 'contacts/isGuestVisitor',
+      isGuestEmailOnly: 'conversationAttributes/isGuestEmailOnly',
       isWidgetStyleFlat: 'appConfig/isWidgetStyleFlat',
     }),
     textColor() {
       return getContrastingTextColor(this.widgetColor);
     },
     hideReplyBox() {
-      // Visitors who are not signed in on the site are answered over email,
-      // not by a live operator, so they get no composer — only the button to
-      // send another request. See GuestDeliveryNotice.
-      if (this.isGuestVisitor) return true;
+      // Диалог, начатый гостем при включённом флаге, идёт только через email —
+      // без композера, только кнопка нового обращения. См. GuestDeliveryNotice.
+      if (this.isGuestEmailOnly) return true;
 
       // Рассылка приходит закрытым диалогом (SCC-45.13) — ответ на неё пишется в том же
       // треде и переоткрывает его, поэтому поле ввода прячем только у обычных закрытых.

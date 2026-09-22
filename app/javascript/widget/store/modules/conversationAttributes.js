@@ -12,10 +12,16 @@ const state = {
   id: '',
   status: '',
   campaignId: null,
+  guestEmailOnly: false,
 };
 
 export const getters = {
   getConversationParams: $state => $state,
+  // Гостевой email-only режим действует только при обоих условиях: признак на самом
+  // диалоге (сервер ставит его при создании, старые диалоги его не имеют) и включённый
+  // флаг аккаунта в конфиге виджета. Выключили флаг — разморожены все, включая помеченные.
+  isGuestEmailOnly: $state =>
+    Boolean($state.guestEmailOnly && window.chatwootWebChannel?.guestEmailOnly),
 };
 
 export const actions = {
@@ -42,18 +48,23 @@ export const mutations = {
     $state.id = data.id;
     $state.status = data.status;
     $state.campaignId = data.campaign_id ?? null;
+    $state.guestEmailOnly = data.guest_email_only === true;
   },
   [UPDATE_CONVERSATION_ATTRIBUTES]($state, data) {
     if (data.id === $state.id) {
       $state.id = data.id;
       $state.status = data.status;
       if ('campaign_id' in data) $state.campaignId = data.campaign_id ?? null;
+      if ('guest_email_only' in data) {
+        $state.guestEmailOnly = data.guest_email_only === true;
+      }
     }
   },
   [CLEAR_CONVERSATION_ATTRIBUTES]($state) {
     $state.id = '';
     $state.status = '';
     $state.campaignId = null;
+    $state.guestEmailOnly = false;
   },
 };
 

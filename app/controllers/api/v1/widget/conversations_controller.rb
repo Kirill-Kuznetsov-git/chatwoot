@@ -17,6 +17,7 @@ class Api::V1::Widget::ConversationsController < Api::V1::Widget::BaseController
   end
 
   def create
+    @guest_session = guest_session? # до мержа по email, см. BaseController#guest_session?
     ActiveRecord::Base.transaction do
       process_update_contact
       @conversation = create_conversation
