@@ -46,15 +46,18 @@ export default {
       isGuestVisitor: 'contacts/isGuestVisitor',
     }),
     // Visitors who are not signed in on the site are answered over email, so
-    // they get a notice saying so. It stays until support actually replies in
-    // the widget, to never contradict a message the visitor can already see.
+    // they get a notice saying so. It stays until a human agent replies in the
+    // widget, to never contradict a message the visitor can already see.
+    // Бот гостям отвечать не должен, поэтому его сообщения и приветствие инбокса
+    // (template) отбивку не снимают — иначе она исчезала бы до того, как её прочитают.
+    // sender.type: 'user' — агент, 'agent_bot' — бот; без sender — не человек.
     showGuestDeliveryNotice() {
       if (!this.isGuestVisitor || !this.conversationSize) return false;
 
-      return !Object.values(this.messages).some(message =>
-        [MESSAGE_TYPE.OUTGOING, MESSAGE_TYPE.TEMPLATE].includes(
-          message.message_type
-        )
+      return !Object.values(this.messages).some(
+        message =>
+          message.message_type === MESSAGE_TYPE.OUTGOING &&
+          message.sender?.type === 'user'
       );
     },
     colorSchemeClass() {
