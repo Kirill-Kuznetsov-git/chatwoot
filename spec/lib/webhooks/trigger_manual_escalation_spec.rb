@@ -19,6 +19,16 @@ RSpec.describe Webhooks::Trigger do
     expect { described_class.execute(url, payload, :account_webhook) }.not_to raise_error
   end
 
+  it 'does not retain transport details in the retry exception logged by ActiveJob or Sidekiq' do
+    allow(SafeFetch).to receive(:fetch).and_raise(SafeFetch::FetchError.new("#{url} private-transport-detail"))
+    retry_error = nil
+    expect do
+      described_class.execute(url, payload, :manual_escalation_webhook, secret: 'test-secret', delivery_id: 'delivery-1')
+    end.to raise_error(Webhooks::Trigger::RetryableError) { |error| retry_error = error }
+    expect(retry_error.full_message).not_to include(url, 'private-transport-detail')
+    expect(retry_error.cause).to be_nil
+  end
+
   it 'does not retry a permanent bad request' do
     allow(SafeFetch).to receive(:fetch).and_raise(SafeFetch::HttpError.new('400 Bad Request'))
     expect do

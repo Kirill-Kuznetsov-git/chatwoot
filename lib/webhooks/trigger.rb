@@ -26,7 +26,10 @@ class Webhooks::Trigger
   def execute
     perform_request
   rescue StandardError => e
-    raise RetryableError.new(status: http_status(e), message: e.message) if retryable_agent_bot_error?(e) || retryable_manual_escalation_error?(e)
+    if retryable_manual_escalation_error?(e)
+      raise RetryableError.new(status: http_status(e), message: 'Manual escalation webhook delivery failed'), cause: nil
+    end
+    raise RetryableError.new(status: http_status(e), message: e.message) if retryable_agent_bot_error?(e)
 
     handle_failure(e)
   end
