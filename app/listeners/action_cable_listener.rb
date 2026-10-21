@@ -1,5 +1,6 @@
 class ActionCableListener < BaseListener
   include Events::Types
+  include ManualEscalationBroadcast
 
   def notification_created(event)
     notification, account, unread_count, count = extract_notification_and_account(event)
@@ -66,7 +67,7 @@ class ActionCableListener < BaseListener
     conversation, account = extract_conversation_and_account(event)
     tokens = user_tokens(account, conversation.inbox.members) + contact_inbox_tokens(conversation.contact_inbox)
 
-    broadcast(account, tokens, CONVERSATION_CREATED, conversation.push_event_data)
+    broadcast_conversation(account, tokens, CONVERSATION_CREATED, conversation.push_event_data, conversation)
   end
 
   def conversation_read(event)
@@ -80,14 +81,14 @@ class ActionCableListener < BaseListener
     conversation, account = extract_conversation_and_account(event)
     tokens = user_tokens(account, conversation.inbox.members) + contact_inbox_tokens(conversation.contact_inbox)
 
-    broadcast(account, tokens, CONVERSATION_STATUS_CHANGED, conversation.push_event_data)
+    broadcast_conversation(account, tokens, CONVERSATION_STATUS_CHANGED, conversation.push_event_data, conversation)
   end
 
   def conversation_updated(event)
     conversation, account = extract_conversation_and_account(event)
     tokens = user_tokens(account, conversation.inbox.members) + contact_inbox_tokens(conversation.contact_inbox)
 
-    broadcast(account, tokens, CONVERSATION_UPDATED, conversation.push_event_data)
+    broadcast_conversation(account, tokens, CONVERSATION_UPDATED, conversation.push_event_data, conversation)
   end
 
   def conversation_unread_count_changed(event)
@@ -105,13 +106,12 @@ class ActionCableListener < BaseListener
     user = event.data[:user]
     tokens = typing_event_listener_tokens(account, conversation, user)
 
-    broadcast(
+    broadcast_conversation(
       account,
       tokens,
       CONVERSATION_TYPING_ON,
-      conversation: conversation.push_event_data,
-      user: user.push_event_data,
-      is_private: event.data[:is_private] || false
+      { conversation: conversation.push_event_data, user: user.push_event_data, is_private: event.data[:is_private] || false },
+      conversation
     )
   end
 
@@ -121,13 +121,12 @@ class ActionCableListener < BaseListener
     user = event.data[:user]
     tokens = typing_event_listener_tokens(account, conversation, user)
 
-    broadcast(
+    broadcast_conversation(
       account,
       tokens,
       CONVERSATION_TYPING_OFF,
-      conversation: conversation.push_event_data,
-      user: user.push_event_data,
-      is_private: event.data[:is_private] || false
+      { conversation: conversation.push_event_data, user: user.push_event_data, is_private: event.data[:is_private] || false },
+      conversation
     )
   end
 

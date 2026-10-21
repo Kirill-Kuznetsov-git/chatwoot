@@ -18,6 +18,14 @@ RSpec.describe Captain::InboxPendingConversationsResolutionJob, type: :job do
       .to have_enqueued_job.on_queue('low')
   end
 
+  it 'does not close or send a closing message for a manually escalated conversation' do
+    resolvable_pending_conversation.update_labels(['escalated'])
+    with_modified_env(MANUAL_ESCALATION_ACCOUNT_IDS: resolvable_pending_conversation.account_id.to_s) do
+      expect { described_class.perform_now(inbox) }.not_to change(resolvable_pending_conversation.messages, :count)
+    end
+    expect(resolvable_pending_conversation.reload.status).to eq('pending')
+  end
+
   context 'when captain_tasks is disabled' do
     it 'resolves pending conversations inactive for over 1 hour' do
       described_class.perform_now(inbox)
@@ -50,6 +58,19 @@ RSpec.describe Captain::InboxPendingConversationsResolutionJob, type: :job do
     before do
       allow(inbox.account).to receive(:feature_enabled?).and_call_original
       allow(inbox.account).to receive(:feature_enabled?).with('captain_tasks').and_return(true)
+    end
+
+    it 'does not send a closing message when manual escalation arrives during evaluation' do
+      service = instance_double(Captain::ConversationCompletionService)
+      allow(Captain::ConversationCompletionService).to receive(:new).and_return(service)
+      allow(service).to receive(:perform) do
+        resolvable_pending_conversation.update_labels(['escalated'])
+        { complete: true, reason: 'Completed' }
+      end
+      with_modified_env(MANUAL_ESCALATION_ACCOUNT_IDS: resolvable_pending_conversation.account_id.to_s) do
+        expect { described_class.perform_now(inbox) }.not_to change(resolvable_pending_conversation.messages, :count)
+      end
+      expect(resolvable_pending_conversation.reload.status).to eq('open')
     end
 
     it 'only evaluates eligible pending conversations (inactive > 1 hour)' do
@@ -158,6 +179,16 @@ RSpec.describe Captain::InboxPendingConversationsResolutionJob, type: :job do
             content_attributes: { activity: { type: 'conversation_status_changed', status: 'resolved' } }
           }
         )
+    end
+
+    it 'preserves the Captain activity reason for untagged conversations when the guard is enabled' do
+      with_modified_env(MANUAL_ESCALATION_ACCOUNT_IDS: resolvable_pending_conversation.account_id.to_s) do
+        described_class.perform_now(inbox)
+      end
+      expect(Conversations::ActivityMessageJob).to have_been_enqueued.with(
+        resolvable_pending_conversation,
+        hash_including(content: include('no outstanding questions'))
+      )
     end
 
     it 'creates a captain inference resolved reporting event' do

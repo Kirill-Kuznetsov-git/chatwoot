@@ -82,7 +82,7 @@ class Api::V1::Widget::ConversationsController < Api::V1::Widget::BaseController
   def destroy_custom_attributes
     conversation.custom_attributes = conversation.custom_attributes.excluding(params[:custom_attribute])
     conversation.save!
-    render json: conversation
+    render json: conversation.as_json.merge('custom_attributes' => conversation.public_custom_attributes)
   end
 
   private

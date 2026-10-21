@@ -26,12 +26,17 @@ class Webhooks::Trigger
   def execute
     perform_request
   rescue StandardError => e
-    raise RetryableError.new(status: http_status(e), message: e.message) if retryable_agent_bot_error?(e)
+    raise RetryableError.new(status: http_status(e), message: e.message) if retryable_agent_bot_error?(e) || retryable_manual_escalation_error?(e)
 
     handle_failure(e)
   end
 
   def handle_failure(error)
+    if @webhook_type == :manual_escalation_webhook
+      Rails.logger.warn("[ManualEscalationWebhook] delivery=#{@delivery_id} status=#{http_status(error)}")
+      return
+    end
+
     handle_error(error)
     Rails.logger.warn "Exception: Invalid webhook URL #{@url} : #{error.message}"
   end
@@ -124,6 +129,15 @@ class Webhooks::Trigger
 
   def retryable_agent_bot_error?(error)
     @webhook_type == :agent_bot_webhook && RETRYABLE_AGENT_BOT_STATUSES.include?(http_status(error))
+  end
+
+  def retryable_manual_escalation_error?(error)
+    return false unless @webhook_type == :manual_escalation_webhook
+
+    status = http_status(error)
+    return true if status == 429 || (500..599).cover?(status.to_i)
+
+    [SafeFetch::FetchError, Timeout::Error, SocketError, IOError, SystemCallError, OpenSSL::SSL::SSLError].any? { |type| error.is_a?(type) }
   end
 
   def http_status(error)

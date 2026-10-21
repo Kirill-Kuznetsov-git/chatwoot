@@ -6,6 +6,7 @@ class ConversationReplyMailer < ApplicationMailer
   include ConversationReplyMailerHelper
   include ReferencesHeaderBuilder
   include EmailAddressParseable
+  include ManualEscalationMailGuard
   default from: ENV.fetch('MAILER_SENDER_EMAIL', 'Chatwoot <accounts@chatwoot.com>')
   layout :choose_layout
 
@@ -19,6 +20,8 @@ class ConversationReplyMailer < ApplicationMailer
     new_messages = @conversation.messages.chat.where('id >= ?', last_queued_id)
     @messages = recap_messages + new_messages
     @messages = @messages.select(&:email_reply_summarizable?)
+    return false if filter_manual_escalation_mail(new_messages) && @messages.empty?
+
     prepare_mail(true)
   end
 
@@ -30,6 +33,7 @@ class ConversationReplyMailer < ApplicationMailer
 
     @messages = @conversation.messages.chat.where(message_type: [:outgoing, :template]).where('id >= ?', last_queued_id)
     @messages = @messages.reject { |m| m.template? && !m.input_csat? }
+    filter_manual_escalation_mail(@messages)
     return false if @messages.count.zero?
 
     prepare_mail(false)
@@ -40,6 +44,9 @@ class ConversationReplyMailer < ApplicationMailer
     return unless smtp_config_set_or_development? || email_smtp_enabled? || (email_imap_enabled? && email_oauth_enabled?)
 
     @message = message
+    @manual_escalation_new_messages = [message]
+    return if suppress_manual_escalation_bot_email?(message)
+
     prepare_mail(true)
   end
 
