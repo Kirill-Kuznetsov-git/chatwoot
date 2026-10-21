@@ -67,8 +67,8 @@ module ManualEscalation
     protect_customer_escalation_link(persisted) if customer_escalation_link_update?
     return unless manual_escalation_enabled?
 
-    sync_manual_escalation_hold(persisted)
     restore_manual_escalation_status(persisted)
+    sync_manual_escalation_hold(persisted)
   end
 
   def refresh_unchanged_custom_attributes(persisted)

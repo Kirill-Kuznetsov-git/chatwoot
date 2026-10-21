@@ -41,6 +41,48 @@ RSpec.describe Conversation do
     expect(conversation.reload.status).to eq('resolved')
   end
 
+  it 'does not reopen a human-closed escalation when an automatic pending transition arrives' do
+    conversation.update_labels(['escalated'])
+    Current.user = create(:user)
+    conversation.resolved!
+    Current.reset
+    conversation.pending!
+    expect(conversation.reload.status).to eq('resolved')
+    expect(conversation.custom_attributes['manual_escalation_hold']).to be(true)
+  end
+
+  it 'does not let an automation rule move a human-closed escalation back to pending' do
+    conversation.update_labels(['escalated'])
+    Current.user = create(:user)
+    conversation.resolved!
+    rule = create(:automation_rule, account: account, actions: [{ action_name: 'pending_conversation', action_params: [] }])
+    AutomationRules::ActionService.new(rule, account, conversation).perform
+    expect(conversation.reload.status).to eq('resolved')
+  end
+
+  it 'still reopens a human-closed escalation when the customer sends a new message' do
+    conversation.update_labels(['escalated'])
+    Current.user = create(:user)
+    conversation.resolved!
+    Current.reset
+    create(:message, conversation: conversation, account: account, inbox: conversation.inbox,
+                     sender: conversation.contact, message_type: :incoming)
+    expect(conversation.reload.status).to eq('open')
+    expect(conversation.custom_attributes['manual_escalation_hold']).to be(true)
+  end
+
+  it 'keeps a new customer reply open instead of returning a held conversation to an active bot' do
+    create(:agent_bot_inbox, inbox: conversation.inbox)
+    conversation.update_labels(['escalated'])
+    Current.user = create(:user)
+    conversation.resolved!
+    Current.reset
+    create(:message, conversation: conversation, account: account, inbox: conversation.inbox,
+                     sender: conversation.contact, message_type: :incoming)
+    expect(conversation.reload.status).to eq('open')
+    expect(conversation.custom_attributes['manual_escalation_hold']).to be(true)
+  end
+
   it 'does not change accounts outside the explicit list' do
     conversation.update_labels(['escalated'])
     with_modified_env(MANUAL_ESCALATION_ACCOUNT_IDS: '') { conversation.resolved! }

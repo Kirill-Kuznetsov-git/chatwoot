@@ -423,6 +423,10 @@ class Message < ApplicationRecord
   end
 
   def reopen_resolved_conversation
+    # A customer's new reply returns a held conversation to human operators,
+    # without the pending transition used to restart an active bot.
+    return conversation.open! if conversation.manually_escalated?
+
     # mark resolved bot conversation as pending to be reopened by bot processor service
     if conversation.inbox.active_bot?
       conversation.pending!
