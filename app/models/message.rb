@@ -42,6 +42,7 @@ class Message < ApplicationRecord
   searchkick callbacks: false if ChatwootApp.advanced_search_allowed?
 
   include MessageFilterHelpers
+  include ManualEscalationMessageGuard
   include Liquidable
   NUMBER_OF_PERMITTED_ATTACHMENTS = 15
 
@@ -422,6 +423,10 @@ class Message < ApplicationRecord
   end
 
   def reopen_resolved_conversation
+    # A customer's new reply returns a held conversation to human operators,
+    # without the pending transition used to restart an active bot.
+    return conversation.open! if conversation.manually_escalated?
+
     # mark resolved bot conversation as pending to be reopened by bot processor service
     if conversation.inbox.active_bot?
       conversation.pending!

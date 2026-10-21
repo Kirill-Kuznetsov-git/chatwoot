@@ -17,6 +17,18 @@ class SendReplyJob < ApplicationJob
 
   def perform(message_id)
     message = Message.find(message_id)
+    if !message.private? && message.sender.is_a?(AgentBot) && message.conversation.manual_escalation_enabled?
+      message.conversation.with_manual_escalation_lock do
+        deliver_reply(message) unless message.conversation.manually_escalated?
+      end
+    else
+      deliver_reply(message)
+    end
+  end
+
+  private
+
+  def deliver_reply(message)
     channel_name = message.conversation.inbox.channel.class.to_s
 
     return send_on_facebook_page(message) if channel_name == 'Channel::FacebookPage'
@@ -26,8 +38,6 @@ class SendReplyJob < ApplicationJob
 
     service_class.new(message: message).perform
   end
-
-  private
 
   def send_on_facebook_page(message)
     if message.conversation.additional_attributes['type'] == 'instagram_direct_message'

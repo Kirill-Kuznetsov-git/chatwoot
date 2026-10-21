@@ -7,7 +7,7 @@ json.array! @conversations do |conversation|
   json.last_activity_at conversation.last_activity_at.to_i
   json.labels conversation.label_list
 
-  last_message = conversation.messages.where.not(message_type: :activity).reorder(created_at: :desc).first
+  last_message = conversation.messages.chat.reorder(created_at: :desc).first
   if last_message
     json.last_message do
       json.id last_message.id

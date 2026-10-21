@@ -51,6 +51,7 @@ class Api::V1::Widget::MessagesController < Api::V1::Widget::BaseController
 
   def apply_labels
     valid_labels = inbox.account.labels.where(title: permitted_params[:labels]).pluck(:title)
+    valid_labels.reject! { |label| label.downcase == @conversation.manual_escalation_label } if @conversation.manual_escalation_enabled?
     @conversation.update_labels(valid_labels) if valid_labels.present?
   end
 

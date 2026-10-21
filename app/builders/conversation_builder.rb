@@ -14,7 +14,10 @@ class ConversationBuilder
   end
 
   def create_new_conversation
-    ::Conversation.create!(conversation_params)
+    ::Conversation.new(conversation_params).tap do |conversation|
+      conversation.custom_attributes = conversation.public_custom_attributes
+      conversation.save!
+    end
   end
 
   def conversation_params

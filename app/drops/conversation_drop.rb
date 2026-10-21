@@ -24,7 +24,7 @@ class ConversationDrop < BaseDrop
   end
 
   def custom_attribute
-    custom_attributes = @obj.try(:custom_attributes) || {}
+    custom_attributes = @obj.try(:public_custom_attributes) || {}
     custom_attributes.transform_keys(&:to_s)
   end
 

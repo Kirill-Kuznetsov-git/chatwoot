@@ -1,4 +1,6 @@
 class WebhookListener < BaseListener
+  include ManualEscalationWebhooks
+
   def conversation_status_changed(event)
     conversation = extract_conversation_and_account(event)[0]
     changed_attributes = extract_changed_attributes(event)
@@ -9,6 +11,7 @@ class WebhookListener < BaseListener
 
   def conversation_updated(event)
     conversation = extract_conversation_and_account(event)[0]
+    deliver_manual_escalation_webhooks(conversation)
     changed_attributes = extract_changed_attributes(event)
     inbox = conversation.inbox
     payload = conversation.webhook_data.merge(event: __method__.to_s, changed_attributes: changed_attributes)
@@ -111,6 +114,7 @@ class WebhookListener < BaseListener
     return unless account.api_and_webhooks_enabled?
 
     account.webhooks.account_type.each do |webhook|
+      next if reserved_manual_escalation_webhook?(webhook)
       next unless webhook.subscriptions.include?(payload[:event])
 
       WebhookJob.perform_later(webhook.url, payload, :account_webhook,

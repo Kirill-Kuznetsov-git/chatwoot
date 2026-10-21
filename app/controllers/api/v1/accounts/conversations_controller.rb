@@ -2,6 +2,7 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
   include Events::Types
   include DateRangeHelper
   include HmacConcern
+  include ManualEscalationActions
 
   before_action :conversation, except: [:index, :meta, :search, :create, :filter]
   before_action :inbox, :contact, :contact_inbox, only: [:create]
@@ -79,6 +80,7 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
   end
 
   def toggle_status
+    @conversation.manual_escalation_release_requested = params[:status] == 'pending' && Current.user.is_a?(User)
     # FIXME: move this logic into a service object
     if bot_handoff?
       @conversation.bot_handoff!
@@ -130,8 +132,7 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
   end
 
   def custom_attributes
-    @conversation.custom_attributes = params.permit(custom_attributes: {})[:custom_attributes]
-    @conversation.save!
+    @conversation.replace_public_custom_attributes!(params.permit(custom_attributes: {})[:custom_attributes]&.to_h)
   end
 
   def destroy

@@ -26,8 +26,13 @@ class Captain::InboxPendingConversationsResolutionJob < ApplicationJob
     Current.executed_by = inbox.captain_assistant
 
     resolvable_pending_conversations(inbox).each do |conversation|
-      create_resolution_message(conversation, inbox)
-      conversation.resolved!
+      conversation.with_manual_escalation_lock do
+        next if conversation.manually_escalated?
+
+        conversation.resolved! if conversation.manual_escalation_enabled?
+        create_resolution_message(conversation, inbox)
+        conversation.resolved! unless conversation.manual_escalation_enabled?
+      end
     end
   end
 
@@ -35,13 +40,24 @@ class Captain::InboxPendingConversationsResolutionJob < ApplicationJob
     Current.executed_by = inbox.captain_assistant
 
     resolvable_pending_conversations(inbox).each do |conversation|
-      evaluation = evaluate_conversation(conversation, inbox)
-      next unless still_resolvable_after_evaluation?(conversation)
+      next if conversation.manually_escalated?
 
-      if evaluation[:complete]
-        resolve_conversation(conversation, inbox, evaluation[:reason])
-      else
-        handoff_conversation(conversation, inbox, evaluation[:reason])
+      evaluation = evaluate_conversation(conversation, inbox)
+      apply_evaluation(conversation, inbox, evaluation)
+    end
+  end
+
+  def apply_evaluation(conversation, inbox, evaluation)
+    reason = evaluation[:complete] ? CAPTAIN_INFERENCE_RESOLVE_ACTIVITY_REASON : CAPTAIN_INFERENCE_HANDOFF_ACTIVITY_REASON
+    conversation.with_captain_activity_context(reason: reason, reason_type: :inference) do
+      conversation.with_manual_escalation_lock do
+        next if conversation.manually_escalated? || !still_resolvable_after_evaluation?(conversation)
+
+        if evaluation[:complete]
+          resolve_conversation(conversation, inbox, evaluation[:reason])
+        else
+          handoff_conversation(conversation, inbox, evaluation[:reason])
+        end
       end
     end
   end
@@ -71,22 +87,28 @@ class Captain::InboxPendingConversationsResolutionJob < ApplicationJob
   end
 
   def resolve_conversation(conversation, inbox, reason)
-    create_private_note(conversation, inbox, "Auto-resolved: #{reason}")
-    create_resolution_message(conversation, inbox)
     conversation.with_captain_activity_context(
       reason: CAPTAIN_INFERENCE_RESOLVE_ACTIVITY_REASON,
       reason_type: :inference
-    ) { conversation.resolved! }
+    ) do
+      conversation.resolved! if conversation.manual_escalation_enabled?
+      create_private_note(conversation, inbox, "Auto-resolved: #{reason}")
+      create_resolution_message(conversation, inbox)
+      conversation.resolved! unless conversation.manual_escalation_enabled?
+    end
     conversation.dispatch_captain_inference_resolved_event
   end
 
   def handoff_conversation(conversation, inbox, reason)
-    create_private_note(conversation, inbox, "Auto-handoff: #{reason}")
-    create_handoff_message(conversation, inbox)
     conversation.with_captain_activity_context(
       reason: CAPTAIN_INFERENCE_HANDOFF_ACTIVITY_REASON,
       reason_type: :inference
-    ) { conversation.bot_handoff! }
+    ) do
+      conversation.bot_handoff! if conversation.manual_escalation_enabled?
+      create_private_note(conversation, inbox, "Auto-handoff: #{reason}")
+      create_handoff_message(conversation, inbox)
+      conversation.bot_handoff! unless conversation.manual_escalation_enabled?
+    end
     conversation.dispatch_captain_inference_handoff_event
     send_out_of_office_message_if_applicable(conversation.reload)
   end
