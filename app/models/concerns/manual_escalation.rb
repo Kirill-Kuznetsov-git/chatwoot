@@ -32,7 +32,7 @@ module ManualEscalation
   end
 
   def manual_escalation_internal_keys
-    [manual_escalation_link_key, 'manual_escalation_hold']
+    [manual_escalation_link_key, 'manual_escalation_hold', *ManualEscalations::Details::KEYS]
   end
 
   def manual_escalation_tagged?
@@ -52,8 +52,10 @@ module ManualEscalation
 
   def replace_public_custom_attributes!(attributes)
     with_lock do
-      internal_attributes = (custom_attributes || {}).slice(*manual_escalation_internal_keys)
-      update!(custom_attributes: (attributes || {}).except(*manual_escalation_internal_keys).merge(internal_attributes))
+      protected_keys = manual_escalation_internal_keys
+      protected_keys -= ManualEscalations::Details::KEYS if human_operator_escalation_action? && ManualEscalations::Details.new(self).enabled?
+      internal_attributes = (custom_attributes || {}).slice(*protected_keys)
+      update!(custom_attributes: (attributes || {}).except(*protected_keys).merge(internal_attributes))
     end
   end
 
@@ -117,7 +119,7 @@ module ManualEscalation
   end
 
   def customer_escalation_link_update?
-    Current.contact.present? && will_save_change_to_custom_attributes?
+    (Current.contact.present? || Current.user.is_a?(Contact)) && will_save_change_to_custom_attributes?
   end
 
   def human_escalation_action?

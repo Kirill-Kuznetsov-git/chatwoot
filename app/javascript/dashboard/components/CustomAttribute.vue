@@ -25,6 +25,7 @@ export default {
     values: { type: Array, default: () => [] },
     value: { type: [String, Number, Boolean], default: '' },
     showActions: { type: Boolean, default: false },
+    allowEmpty: { type: Boolean, default: false },
     attributeType: { type: String, default: 'text' },
     attributeRegex: {
       type: String,
@@ -133,7 +134,7 @@ export default {
     }
     return {
       editedValue: {
-        required,
+        ...(this.allowEmpty ? {} : { required }),
         regexValidation: value => {
           if (!this.attributeRegex || !value) return true;
           try {

@@ -54,6 +54,7 @@
 class Conversation < ApplicationRecord
   include Labelable
   include ManualEscalation
+  include ManualEscalationDetails
   include LlmFormattable
   include AssignmentHandler
   include AutoAssignmentHandler

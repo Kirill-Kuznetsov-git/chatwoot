@@ -359,6 +359,18 @@
       "UNMUTE": "Unmute mic",
       "VIEW_CHAT_HISTORY": "View chat history",
       "GO_TO_CONVERSATION": "Go to conversation thread"
+    },
+    "MANUAL_ESCALATION": {
+      "TITLE": "Escalate conversation",
+      "DESCRIPTION": "Review the Slack title and optional reason before escalating.",
+      "CONFIRM": "Escalate",
+      "SLACK_TITLE": "Title for Slack (optional)",
+      "AUTO_HINT": "Leave the suggested title unchanged to keep it automatic. Clear your edit to return to an automatic title. Do not include personal data.",
+      "REASON": "Reason (optional)",
+      "NO_REASON": "No reason selected",
+      "INVALID": "Use one line with at most 150 characters.",
+      "ERROR": "Could not save the escalation. Please try again.",
+      "COUNT": "{count} / {max}"
     }
   },
   "EMAIL_TRANSCRIPT": {

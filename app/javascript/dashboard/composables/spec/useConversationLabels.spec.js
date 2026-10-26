@@ -1,7 +1,15 @@
 import { useConversationLabels } from '../useConversationLabels';
+import { nextTick, reactive } from 'vue';
+import ConversationAPI from 'dashboard/api/conversations';
 import { useStore, useStoreGetters } from 'dashboard/composables/store';
 
 vi.mock('dashboard/composables/store');
+vi.mock('dashboard/api/conversations', () => ({
+  default: {
+    getManualEscalationDetails: vi.fn(),
+    updateManualEscalationDetails: vi.fn(),
+  },
+}));
 
 describe('useConversationLabels', () => {
   let store;
@@ -82,6 +90,126 @@ describe('useConversationLabels', () => {
     expect(store.dispatch).toHaveBeenCalledWith('conversationLabels/update', {
       conversationId: 1,
       labels: ['Label 1'],
+    });
+  });
+  describe('manual escalation confirmation', () => {
+    beforeEach(() => {
+      getters.getSelectedChat = reactive({
+        value: {
+          id: 1,
+          manual_escalation_details: {
+            enabled: true,
+            escalation_label: 'escalated',
+          },
+        },
+      });
+      store.getters['conversationLabels/getConversationLabels'].mockReturnValue(
+        ['Label 1']
+      );
+      ConversationAPI.getManualEscalationDetails.mockResolvedValue({
+        data: {
+          enabled: true,
+          title: 'Automatic',
+          title_override: '',
+          reason: '',
+          reasons: ['Other'],
+          max_length: 150,
+        },
+      });
+    });
+
+    it('opens a proposal without posting the escalation label and cancel does not write', async () => {
+      const labels = useConversationLabels();
+      await labels.addLabelToConversation({ title: 'escalated' });
+      expect(labels.escalationProposal.value.title).toBe('Automatic');
+      expect(store.dispatch).not.toHaveBeenCalled();
+      labels.cancelEscalation();
+      expect(labels.escalationProposal.value).toBeNull();
+      expect(
+        ConversationAPI.updateManualEscalationDetails
+      ).not.toHaveBeenCalled();
+    });
+
+    it('confirms once with the explicit override, then refreshes labels', async () => {
+      ConversationAPI.updateManualEscalationDetails.mockResolvedValue({
+        data: { labels: ['Label 1', 'escalated'] },
+      });
+      const labels = useConversationLabels();
+      await labels.addLabelToConversation({ title: 'escalated' });
+      await labels.confirmEscalation({ title: '', reason: 'Other' });
+      expect(
+        ConversationAPI.updateManualEscalationDetails
+      ).toHaveBeenCalledWith(1, { title: '', reason: 'Other', escalate: true });
+      expect(store.dispatch).toHaveBeenCalledWith(
+        'conversationLabels/setConversationLabel',
+        { id: 1, data: ['Label 1', 'escalated'] }
+      );
+      expect(labels.escalationProposal.value).toBeNull();
+    });
+
+    it('keeps the form open on save failure and never posts labels as a fallback', async () => {
+      ConversationAPI.updateManualEscalationDetails.mockRejectedValue(
+        new Error('offline')
+      );
+      const labels = useConversationLabels();
+      await labels.addLabelToConversation({ title: 'escalated' });
+      await labels.confirmEscalation({ title: 'Manual', reason: '' });
+      expect(labels.escalationProposal.value).not.toBeNull();
+      expect(labels.escalationError.value).toBe(true);
+      expect(store.dispatch).not.toHaveBeenCalled();
+    });
+
+    it('does not escalate on an unknown endpoint or late navigation response', async () => {
+      const labels = useConversationLabels();
+      ConversationAPI.getManualEscalationDetails.mockRejectedValueOnce(
+        new Error('404')
+      );
+      await labels.addLabelToConversation({ title: 'escalated' });
+      expect(store.dispatch).not.toHaveBeenCalled();
+      let complete;
+      ConversationAPI.getManualEscalationDetails.mockReturnValue(
+        new Promise(resolve => {
+          complete = resolve;
+        })
+      );
+      const pending = labels.addLabelToConversation({ title: 'escalated' });
+      getters.getSelectedChat.value = { id: 2 };
+      await nextTick();
+      complete({ data: { enabled: true, title: 'Old' } });
+      await pending;
+      expect(labels.escalationProposal.value).toBeNull();
+      expect(store.dispatch).not.toHaveBeenCalled();
+    });
+
+    it('does not apply an old save response after navigation to the same id in another account', async () => {
+      getters.getSelectedChat.value.account_id = 1;
+      const labels = useConversationLabels();
+      await labels.addLabelToConversation({ title: 'escalated' });
+      let complete;
+      ConversationAPI.updateManualEscalationDetails.mockReturnValue(
+        new Promise(resolve => {
+          complete = resolve;
+        })
+      );
+      const saving = labels.confirmEscalation({ title: '', reason: '' });
+      getters.getSelectedChat.value = { id: 1, account_id: 2 };
+      await nextTick();
+      expect(labels.escalationProposal.value).toBeNull();
+      complete({ data: { labels: ['escalated'] } });
+      await saving;
+      expect(store.dispatch).not.toHaveBeenCalled();
+    });
+
+    it('cancels a proposal on navigation and cannot save it into another conversation', async () => {
+      const labels = useConversationLabels();
+      await labels.addLabelToConversation({ title: 'escalated' });
+      getters.getSelectedChat.value = { id: 2 };
+      await nextTick();
+      await labels.confirmEscalation({ title: 'Manual', reason: '' });
+      expect(labels.escalationProposal.value).toBeNull();
+      expect(
+        ConversationAPI.updateManualEscalationDetails
+      ).not.toHaveBeenCalled();
     });
   });
 });

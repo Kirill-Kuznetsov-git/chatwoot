@@ -168,6 +168,8 @@ Rails.application.routes.draw do
               post :unmute
               post :transcript
               post :toggle_status
+              get :manual_escalation_details
+              post :manual_escalation_details
               post :manual_escalation_link
               post :manual_escalation_note
               post :toggle_priority
