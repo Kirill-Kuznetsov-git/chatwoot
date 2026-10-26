@@ -7,24 +7,18 @@ import { useKeyboardEvents } from 'dashboard/composables/useKeyboardEvents';
 import Spinner from 'shared/components/Spinner.vue';
 import LabelDropdown from 'shared/components/ui/label/LabelDropdown.vue';
 import AddLabel from 'shared/components/ui/dropdown/AddLabel.vue';
-import ManualEscalationModal from './ManualEscalationModal.vue';
 
 export default {
   components: {
     Spinner,
     LabelDropdown,
     AddLabel,
-    ManualEscalationModal,
   },
   setup() {
     const { isAdmin } = useAdmin();
 
     const {
       escalationProposal,
-      escalationBusy,
-      escalationError,
-      confirmEscalation,
-      cancelEscalation,
       savedLabels,
       activeLabels,
       accountLabels,
@@ -66,10 +60,6 @@ export default {
     return {
       isAdmin,
       escalationProposal,
-      escalationBusy,
-      escalationError,
-      confirmEscalation,
-      cancelEscalation,
       savedLabels,
       activeLabels,
       accountLabels,
@@ -137,22 +127,6 @@ export default {
       </div>
     </div>
     <Spinner v-else />
-    <p
-      v-if="escalationError && !escalationProposal"
-      role="alert"
-      class="text-sm text-n-ruby-11"
-    >
-      {{ $t('CONVERSATION.MANUAL_ESCALATION.ERROR') }}
-    </p>
-    <ManualEscalationModal
-      v-if="escalationProposal"
-      :key="escalationProposal.conversationId"
-      :details="escalationProposal"
-      :busy="escalationBusy"
-      :error="escalationError"
-      @confirm="confirmEscalation"
-      @cancel="cancelEscalation"
-    />
   </div>
 </template>
 

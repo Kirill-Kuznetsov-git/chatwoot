@@ -118,8 +118,29 @@ describe('useConversationLabels', () => {
       });
     });
 
+    it('shares proposals between separate callers in the same store but isolates other stores', async () => {
+      const source = useConversationLabels();
+      const host = useConversationLabels();
+      await source.addLabelToConversation({ title: 'escalated' });
+      expect(host.escalationProposal.value?.title).toBe('Automatic');
+      useStore.mockReturnValue({ ...store });
+      const otherStore = useConversationLabels();
+      expect(otherStore.escalationProposal.value).toBeNull();
+      host.cancelEscalation();
+      expect(source.escalationProposal.value).toBeNull();
+    });
+
+    it('cancels on account-route changes even while the previous selected chat remains cached', async () => {
+      getters.getCurrentAccountId = reactive({ value: 1 });
+      const labels = useConversationLabels({ coordinate: true });
+      await labels.addLabelToConversation({ title: 'escalated' });
+      getters.getCurrentAccountId.value = 2;
+      await nextTick();
+      expect(labels.escalationProposal.value).toBeNull();
+    });
+
     it('opens a proposal without posting the escalation label and cancel does not write', async () => {
-      const labels = useConversationLabels();
+      const labels = useConversationLabels({ coordinate: true });
       await labels.addLabelToConversation({ title: 'escalated' });
       expect(labels.escalationProposal.value.title).toBe('Automatic');
       expect(store.dispatch).not.toHaveBeenCalled();
@@ -134,7 +155,7 @@ describe('useConversationLabels', () => {
       ConversationAPI.updateManualEscalationDetails.mockResolvedValue({
         data: { labels: ['Label 1', 'escalated'] },
       });
-      const labels = useConversationLabels();
+      const labels = useConversationLabels({ coordinate: true });
       await labels.addLabelToConversation({ title: 'escalated' });
       await labels.confirmEscalation({ title: '', reason: 'Other' });
       expect(
@@ -151,7 +172,7 @@ describe('useConversationLabels', () => {
       ConversationAPI.updateManualEscalationDetails.mockRejectedValue(
         new Error('offline')
       );
-      const labels = useConversationLabels();
+      const labels = useConversationLabels({ coordinate: true });
       await labels.addLabelToConversation({ title: 'escalated' });
       await labels.confirmEscalation({ title: 'Manual', reason: '' });
       expect(labels.escalationProposal.value).not.toBeNull();
@@ -160,7 +181,7 @@ describe('useConversationLabels', () => {
     });
 
     it('does not escalate on an unknown endpoint or late navigation response', async () => {
-      const labels = useConversationLabels();
+      const labels = useConversationLabels({ coordinate: true });
       ConversationAPI.getManualEscalationDetails.mockRejectedValueOnce(
         new Error('404')
       );
@@ -183,7 +204,7 @@ describe('useConversationLabels', () => {
 
     it('does not apply an old save response after navigation to the same id in another account', async () => {
       getters.getSelectedChat.value.account_id = 1;
-      const labels = useConversationLabels();
+      const labels = useConversationLabels({ coordinate: true });
       await labels.addLabelToConversation({ title: 'escalated' });
       let complete;
       ConversationAPI.updateManualEscalationDetails.mockReturnValue(
@@ -201,7 +222,7 @@ describe('useConversationLabels', () => {
     });
 
     it('cancels a proposal on navigation and cannot save it into another conversation', async () => {
-      const labels = useConversationLabels();
+      const labels = useConversationLabels({ coordinate: true });
       await labels.addLabelToConversation({ title: 'escalated' });
       getters.getSelectedChat.value = { id: 2 };
       await nextTick();

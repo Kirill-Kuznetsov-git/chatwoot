@@ -5,6 +5,7 @@ import NextSidebar from 'next/sidebar/Sidebar.vue';
 import WootKeyShortcutModal from 'dashboard/components/widgets/modal/WootKeyShortcutModal.vue';
 import AddAccountModal from 'dashboard/components/app/AddAccountModal.vue';
 import UpgradePage from 'dashboard/routes/dashboard/upgrade/UpgradePage.vue';
+import ManualEscalationCoordinator from './conversation/labels/ManualEscalationCoordinator.vue';
 
 import { useUISettings } from 'dashboard/composables/useUISettings';
 import { useAccount } from 'dashboard/composables/useAccount';
@@ -33,6 +34,7 @@ export default {
     WootKeyShortcutModal,
     AddAccountModal,
     UpgradePage,
+    ManualEscalationCoordinator,
     CopilotLauncher,
     CopilotContainer,
     FloatingCallWidget,
@@ -131,6 +133,7 @@ export default {
 
 <template>
   <div class="flex flex-grow overflow-hidden text-n-slate-12">
+    <ManualEscalationCoordinator />
     <NextSidebar
       :is-mobile-sidebar-open="isMobileSidebarOpen"
       @toggle-account-modal="toggleAccountModal"
