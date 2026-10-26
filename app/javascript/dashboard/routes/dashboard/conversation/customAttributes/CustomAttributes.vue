@@ -201,6 +201,10 @@ const onClickToggle = () => {
   });
 };
 
+const isManualEscalationAttribute = key =>
+  props.attributeType === 'conversation_attribute' &&
+  ['manual_escalation_title', 'manual_escalation_reason'].includes(key);
+
 const onUpdate = async (key, value) => {
   const updatedAttributes = { ...customAttributes.value, [key]: value };
   try {
@@ -208,6 +212,7 @@ const onUpdate = async (key, value) => {
       await store.dispatch('updateCustomAttributes', {
         conversationId: conversationId.value,
         customAttributes: updatedAttributes,
+        propagateErrors: isManualEscalationAttribute(key),
       });
     } else {
       store.dispatch('contacts/update', {
@@ -217,8 +222,13 @@ const onUpdate = async (key, value) => {
     }
     useAlert(t('CUSTOM_ATTRIBUTES.FORM.UPDATE.SUCCESS'));
   } catch (error) {
-    const errorMessage =
-      error?.response?.message || t('CUSTOM_ATTRIBUTES.FORM.UPDATE.ERROR');
+    const invalidTitle =
+      isManualEscalationAttribute(key) &&
+      key === 'manual_escalation_title' &&
+      error?.response?.status === 422;
+    const errorMessage = invalidTitle
+      ? t('CONVERSATION.MANUAL_ESCALATION.INVALID')
+      : error?.response?.message || t('CUSTOM_ATTRIBUTES.FORM.UPDATE.ERROR');
     useAlert(errorMessage);
   }
 };
@@ -230,6 +240,7 @@ const onDelete = async key => {
       await store.dispatch('updateCustomAttributes', {
         conversationId: conversationId.value,
         customAttributes: updatedAttributes,
+        propagateErrors: isManualEscalationAttribute(key),
       });
     } else {
       store.dispatch('contacts/deleteCustomAttributes', {
