@@ -46,6 +46,11 @@ RSpec.describe Conversations::EventDataPresenter do
   end
 
   describe '#webhook_data' do
+    it 'excludes new private escalation text from generic webhook jobs even when disabled' do
+      conversation.update!(custom_attributes: { manual_escalation_title: 'private', manual_escalation_reason: 'Другое', customer_field: 'visible' })
+      expect(presenter.webhook_data[:custom_attributes]).to eq('customer_field' => 'visible')
+    end
+
     it 'includes account details for webhook consumers' do
       expect(presenter.webhook_data[:account]).to eq(conversation.account.webhook_data)
     end

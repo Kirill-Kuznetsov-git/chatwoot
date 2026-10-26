@@ -121,4 +121,21 @@ RSpec.describe 'Manual escalation customer privacy', type: :request do
     expect(contact_inbox.conversations.last.label_list).not_to include('escalated')
     expect(contact_inbox.conversations.last.custom_attributes).not_to include('manual_escalation_hold')
   end
+
+  it 'keeps title and reason private and protected even with all escalation flags disabled' do
+    conversation.update!(custom_attributes: conversation.custom_attributes.merge('manual_escalation_title' => 'Private title',
+                                                                                 'manual_escalation_reason' => 'Другое'))
+    with_modified_env(MANUAL_ESCALATION_ACCOUNT_IDS: '', MANUAL_ESCALATION_DETAILS_ENABLED: 'false') do
+      widget.inbox.update!(lock_to_single_conversation: true)
+      post '/api/v1/widget/conversations', headers: { 'X-Auth-Token' => token },
+                                           params: { website_token: widget.website_token, message: { content: 'Hello' } }, as: :json
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include('customer_field')
+      expect(response.body).not_to include('Private title', 'manual_escalation_reason')
+      expect(ConversationDrop.new(conversation).custom_attribute).to eq('customer_field' => 'visible')
+      customer_params = { website_token: widget.website_token, custom_attributes: { manual_escalation_title: 'spoofed' } }
+      post '/api/v1/widget/conversations/set_custom_attributes', headers: { 'X-Auth-Token' => token }, params: customer_params, as: :json
+      expect(conversation.reload.custom_attributes).to include('manual_escalation_title' => 'Private title', 'manual_escalation_reason' => 'Другое')
+    end
+  end
 end

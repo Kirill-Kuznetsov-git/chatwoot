@@ -63,3 +63,8 @@ json.sla_policy_id sla_applicable ? conversation.sla_policy_id : nil
 json.partial! 'enterprise/api/v1/conversations/partials/conversation', conversation: conversation if ChatwootApp.enterprise?
 # Support Care (SCC-102): сроки нашего SLA-движка в формате штатного таймера карточки диалога.
 json.partial! 'api/v1/conversations/partials/care_sla', conversation: conversation
+
+json.manual_escalation_details do
+  json.enabled ManualEscalations::Details.new(conversation).enabled?
+  json.escalation_label conversation.manual_escalation_label
+end

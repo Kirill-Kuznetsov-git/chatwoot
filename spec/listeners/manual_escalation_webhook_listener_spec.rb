@@ -51,4 +51,18 @@ RSpec.describe WebhookListener do
     job = enqueued_jobs.find { |entry| entry[:job] == ManualEscalations::WebhookJob }
     expect(ActiveJob::Arguments.deserialize(job[:args])[1]).to include(status: 'pending', custom_attributes: { manual_escalation_hold: false })
   end
+
+  it 'keeps new private text out of both dedicated and generic webhook snapshots and changed attributes' do
+    create(:webhook, account: account, inbox_id: nil, url: 'https://example.com/generic', subscriptions: ['conversation_updated'])
+    conversation.update_labels(['escalated'])
+    conversation.update!(custom_attributes: conversation.custom_attributes.merge('manual_escalation_title' => 'PRIVATE-TITLE',
+                                                                                 'manual_escalation_reason' => 'Другое'))
+    clear_enqueued_jobs
+    changes = { custom_attributes: [{ 'manual_escalation_title' => 'OLD-PRIVATE' }, conversation.custom_attributes] }
+    event = Events::Base.new(:'conversation.updated', Time.zone.now, conversation: conversation, changed_attributes: changes)
+    described_class.instance.conversation_updated(event)
+    jobs = enqueued_jobs.select { |entry| [WebhookJob, ManualEscalations::WebhookJob].include?(entry[:job]) }
+    expect(jobs).to have_attributes(size: 2)
+    expect(jobs.to_json).not_to include('PRIVATE-TITLE', 'OLD-PRIVATE', 'manual_escalation_reason')
+  end
 end

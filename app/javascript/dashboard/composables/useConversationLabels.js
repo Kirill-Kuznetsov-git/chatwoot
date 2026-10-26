@@ -1,11 +1,15 @@
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
+import ConversationAPI from 'dashboard/api/conversations';
 import { useStore, useStoreGetters } from 'dashboard/composables/store';
+
+// Each dashboard store owns one flow, shared by sidebar and command-bar callers.
+const escalationStates = new WeakMap();
 
 /**
  * Composable for managing conversation labels
  * @returns {Object} An object containing methods and computed properties for conversation labels
  */
-export function useConversationLabels() {
+export function useConversationLabels({ coordinate = false } = {}) {
   const store = useStore();
   const getters = useStoreGetters();
 
@@ -20,6 +24,9 @@ export function useConversationLabels() {
    * @type {import('vue').ComputedRef<number|null>}
    */
   const conversationId = computed(() => currentChat.value?.id);
+  const accountId = computed(
+    () => getters.getCurrentAccountId?.value ?? currentChat.value?.account_id
+  );
 
   /**
    * All labels available for the account
@@ -72,7 +79,90 @@ export function useConversationLabels() {
    * @param {Object} value - The label object to be added
    * @param {string} value.title - The title of the label to be added
    */
-  const addLabelToConversation = value => {
+  if (!escalationStates.has(store)) {
+    escalationStates.set(store, {
+      escalationProposal: ref(null),
+      escalationError: ref(false),
+      escalationBusy: ref(false),
+      requestVersion: 0,
+    });
+  }
+  const escalationState = escalationStates.get(store);
+  const { escalationProposal, escalationError, escalationBusy } =
+    escalationState;
+
+  const cancelEscalation = () => {
+    escalationState.requestVersion += 1;
+    escalationProposal.value = null;
+    escalationError.value = false;
+  };
+  // Only the always-mounted dashboard coordinator owns navigation cleanup.
+  if (coordinate) {
+    watch([conversationId, accountId], cancelEscalation, { flush: 'sync' });
+  }
+
+  const confirmEscalation = async values => {
+    const proposal = escalationProposal.value;
+    if (
+      !proposal ||
+      proposal.conversationId !== conversationId.value ||
+      escalationBusy.value
+    )
+      return;
+    const version = escalationState.requestVersion;
+    escalationBusy.value = true;
+    escalationError.value = false;
+    try {
+      const { data } = await ConversationAPI.updateManualEscalationDetails(
+        proposal.conversationId,
+        { ...values, escalate: true }
+      );
+      if (version !== escalationState.requestVersion) return;
+      await store.dispatch('conversationLabels/setConversationLabel', {
+        id: proposal.conversationId,
+        data: data.labels,
+      });
+      if (proposal === escalationProposal.value) cancelEscalation();
+    } catch {
+      if (proposal === escalationProposal.value) escalationError.value = true;
+    } finally {
+      escalationBusy.value = false;
+    }
+  };
+
+  const addLabelToConversation = async value => {
+    const config = currentChat.value?.manual_escalation_details;
+    if (
+      config?.enabled &&
+      value.title.toLowerCase() === config.escalation_label
+    ) {
+      if (escalationBusy.value) return;
+      const id = conversationId.value;
+      escalationState.requestVersion += 1;
+      const version = escalationState.requestVersion;
+      escalationBusy.value = true;
+      escalationError.value = false;
+      try {
+        const { data } = await ConversationAPI.getManualEscalationDetails(id);
+        if (
+          version !== escalationState.requestVersion ||
+          id !== conversationId.value
+        )
+          return;
+        if (data.enabled)
+          escalationProposal.value = { ...data, conversationId: id };
+        else await onUpdateLabels([...savedLabels.value, value.title]);
+      } catch {
+        if (
+          version === escalationState.requestVersion &&
+          id === conversationId.value
+        )
+          escalationError.value = true;
+      } finally {
+        escalationBusy.value = false;
+      }
+      return;
+    }
     const result = activeLabels.value.map(item => item.title);
     result.push(value.title);
     onUpdateLabels(result);
@@ -90,6 +180,11 @@ export function useConversationLabels() {
   };
 
   return {
+    escalationProposal,
+    escalationError,
+    escalationBusy,
+    cancelEscalation,
+    confirmEscalation,
     accountLabels,
     savedLabels,
     activeLabels,

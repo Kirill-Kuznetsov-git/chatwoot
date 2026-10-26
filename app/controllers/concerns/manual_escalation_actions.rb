@@ -27,7 +27,21 @@ module ManualEscalationActions
     render json: { id: note.id, private: note.private? }
   end
 
+  def manual_escalation_details
+    details = ManualEscalations::Details.new(@conversation)
+    return render json: details if request.get?
+    return head :forbidden unless details.enabled? && Current.user.is_a?(User)
+    return render json: { error: 'Invalid escalation details' }, status: :unprocessable_entity unless valid_manual_escalation_details?
+
+    details.update!(title: params[:title], reason: params[:reason], escalate: params[:escalate])
+    render json: details.as_json.merge(labels: @conversation.label_list)
+  end
+
   private
+
+  def valid_manual_escalation_details?
+    params[:title].is_a?(String) && params[:reason].is_a?(String) && [true, false].include?(params[:escalate])
+  end
 
   def authorize_manual_escalation
     allowed = @conversation.manual_escalation_enabled? &&

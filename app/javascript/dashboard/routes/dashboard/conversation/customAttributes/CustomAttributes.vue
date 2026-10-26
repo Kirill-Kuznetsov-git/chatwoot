@@ -291,6 +291,10 @@ const evenClass = [
             <CustomAttribute
               :key="element.id"
               :attribute-key="element.attribute_key"
+              :allow-empty="
+                attributeType === 'conversation_attribute' &&
+                element.attribute_key === 'manual_escalation_title'
+              "
               :attribute-type="element.attribute_display_type"
               :values="element.attribute_values"
               :label="element.attribute_display_name"

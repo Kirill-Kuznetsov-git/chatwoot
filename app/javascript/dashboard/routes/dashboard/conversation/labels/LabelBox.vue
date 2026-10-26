@@ -1,5 +1,5 @@
 <script>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { mapGetters } from 'vuex';
 import { useAdmin } from 'dashboard/composables/useAdmin';
 import { useConversationLabels } from 'dashboard/composables/useConversationLabels';
@@ -18,6 +18,7 @@ export default {
     const { isAdmin } = useAdmin();
 
     const {
+      escalationProposal,
       savedLabels,
       activeLabels,
       accountLabels,
@@ -34,6 +35,10 @@ export default {
     const closeDropdownLabel = () => {
       showSearchDropdownLabel.value = false;
     };
+
+    watch(escalationProposal, proposal => {
+      if (proposal) closeDropdownLabel();
+    });
 
     const keyboardEvents = {
       KeyL: {
@@ -54,6 +59,7 @@ export default {
     useKeyboardEvents(keyboardEvents);
     return {
       isAdmin,
+      escalationProposal,
       savedLabels,
       activeLabels,
       accountLabels,

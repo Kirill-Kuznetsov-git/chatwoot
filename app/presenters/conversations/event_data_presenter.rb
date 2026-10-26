@@ -17,7 +17,7 @@ class Conversations::EventDataPresenter < SimpleDelegator
       first_reply_created_at: first_reply_created_at,
       priority: priority,
       waiting_since: waiting_since.to_i,
-      **push_timestamps
+      **push_timestamps, manual_escalation_details: manual_escalation_details_config
     }
   end
 
@@ -25,11 +25,16 @@ class Conversations::EventDataPresenter < SimpleDelegator
   def webhook_data
     push_data.merge(
       account: account.webhook_data,
+      custom_attributes: (custom_attributes || {}).except(*ManualEscalations::Details::KEYS),
       messages: webhook_push_messages
     )
   end
 
   private
+
+  def manual_escalation_details_config
+    { enabled: ManualEscalations::Details.new(__getobj__).enabled?, escalation_label: manual_escalation_label }
+  end
 
   def push_messages
     [messages.where(account_id: account_id).chat.last&.push_event_data].compact

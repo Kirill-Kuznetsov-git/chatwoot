@@ -3,6 +3,22 @@ module ManualEscalationWebhooks
 
   private
 
+  def conversation_webhook_changed_attributes(event)
+    changes = extract_changed_attributes(event)
+    changes&.each do |change|
+      values = change.transform_keys(&:to_s)['custom_attributes']
+      values&.transform_values! { |value| without_escalation_details(value) }
+    end
+    changes
+  end
+
+  def without_escalation_details(value)
+    return value unless value.is_a?(Hash)
+
+    keys = ManualEscalations::Details::KEYS
+    value.except(*keys, *keys.map(&:to_sym))
+  end
+
   def manual_escalation_webhook_urls
     ENV.fetch('MANUAL_ESCALATION_WEBHOOK_URLS', '').split(',').map(&:strip)
   end

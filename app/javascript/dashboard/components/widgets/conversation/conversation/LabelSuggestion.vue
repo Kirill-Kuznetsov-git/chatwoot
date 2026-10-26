@@ -6,6 +6,7 @@ import { useBranding } from 'shared/composables/useBranding';
 
 // composables
 import { useCaptain } from 'dashboard/composables/useCaptain';
+import { useConversationLabels } from 'dashboard/composables/useConversationLabels';
 import { useTrack } from 'dashboard/composables';
 
 // store & api
@@ -35,9 +36,14 @@ export default {
   },
   setup() {
     const { captainTasksEnabled } = useCaptain();
+    const { addLabelToConversation } = useConversationLabels();
     const { replaceInstallationName } = useBranding();
 
-    return { captainTasksEnabled, replaceInstallationName };
+    return {
+      captainTasksEnabled,
+      replaceInstallationName,
+      addLabelToConversation,
+    };
   },
   data() {
     return {
@@ -125,15 +131,39 @@ export default {
         this.conversationId
       );
     },
-    addAllLabels() {
+    async addAllLabels() {
+      const conversationId = this.conversationId;
+      const accountId = this.currentAccountId;
       let labelsToAdd = this.selectedLabels;
       if (!labelsToAdd.length) {
         labelsToAdd = this.preparedLabels.map(label => label.title);
       }
-      this.$store.dispatch('conversationLabels/update', {
-        conversationId: this.conversationId,
-        labels: labelsToAdd,
-      });
+      const config = this.currentChat?.manual_escalation_details;
+      const escalation =
+        config?.enabled &&
+        labelsToAdd.find(
+          label => label.toLowerCase() === config.escalation_label
+        );
+      if (escalation) {
+        const otherLabels = labelsToAdd.filter(label => label !== escalation);
+        if (otherLabels.length) {
+          await this.$store.dispatch('conversationLabels/update', {
+            conversationId: this.conversationId,
+            labels: [...new Set([...this.chatLabels, ...otherLabels])],
+          });
+        }
+        if (
+          conversationId !== this.conversationId ||
+          accountId !== this.currentAccountId
+        )
+          return;
+        await this.addLabelToConversation({ title: escalation });
+      } else {
+        await this.$store.dispatch('conversationLabels/update', {
+          conversationId: this.conversationId,
+          labels: labelsToAdd,
+        });
+      }
       this.trackLabelEvent(CAPTAIN_EVENTS.LABEL_SUGGESTION_APPLIED);
     },
     trackLabelEvent(event) {
