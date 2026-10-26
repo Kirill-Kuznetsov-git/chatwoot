@@ -482,7 +482,7 @@ const actions = {
 
   updateCustomAttributes: async (
     { commit },
-    { conversationId, customAttributes }
+    { conversationId, customAttributes, propagateErrors = false }
   ) => {
     try {
       const response = await ConversationApi.updateCustomAttributes({
@@ -495,7 +495,7 @@ const actions = {
         customAttributes: custom_attributes,
       });
     } catch (error) {
-      // Handle error
+      if (propagateErrors) throw error;
     }
   },
 
