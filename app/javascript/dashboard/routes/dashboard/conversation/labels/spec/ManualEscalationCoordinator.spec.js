@@ -63,6 +63,10 @@ beforeEach(() => {
   store = {
     dispatch: vi.fn(),
     getters: reactive({
+      get getSelectedChatId() {
+        return conversationGetters.getSelectedChatId(conversationState);
+      },
+      getCurrentAccountId: 1,
       get getSelectedChat() {
         return conversationGetters.getSelectedChat(conversationState);
       },
@@ -155,7 +159,7 @@ describe('dashboard escalation coordinator without conversation sidebar', () => 
     await flushPromises();
     expect(wrapper.find('[role="alert"]').exists()).toBe(true);
     expect(store.dispatch).not.toHaveBeenCalled();
-    conversationState.allConversations[0].account_id = 2;
+    store.getters.getCurrentAccountId = 2;
     await flushPromises();
     expect(wrapper.find('input').exists()).toBe(false);
   });
@@ -193,18 +197,21 @@ describe('dashboard escalation coordinator without conversation sidebar', () => 
     ).not.toHaveBeenCalled();
   });
 
-  it('still discards the draft when the operator selects another conversation', async () => {
-    await command.handler(command);
-    await flushPromises();
-    await wrapper.find('input').setValue('Draft for the first conversation');
-    conversationState.selectedChatId = 2;
-    await flushPromises();
+  it.each([2, null])(
+    'still discards the draft when the selected conversation changes to %s',
+    async selectedChatId => {
+      await command.handler(command);
+      await flushPromises();
+      await wrapper.find('input').setValue('Draft for the first conversation');
+      conversationState.selectedChatId = selectedChatId;
+      await flushPromises();
 
-    expect(wrapper.find('input').exists()).toBe(false);
-    expect(
-      ConversationAPI.updateManualEscalationDetails
-    ).not.toHaveBeenCalled();
-  });
+      expect(wrapper.find('input').exists()).toBe(false);
+      expect(
+        ConversationAPI.updateManualEscalationDetails
+      ).not.toHaveBeenCalled();
+    }
+  );
 
   it('keeps the title and reason when background activity reorders the conversation list', async () => {
     await command.handler(command);

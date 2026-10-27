@@ -16,7 +16,7 @@ export const getSelectedChatConversation = ({
 
 const getters = {
   getAllConversations: ({ allConversations, chatSortFilter: sortKey }) => {
-    return [...allConversations].sort((a, b) => sortComparator(a, b, sortKey));
+    return allConversations.sort((a, b) => sortComparator(a, b, sortKey));
   },
   getFilteredConversations: (
     { allConversations, chatSortFilter, appliedFilters },
@@ -48,6 +48,7 @@ const getters = {
       })
       .sort((a, b) => sortComparator(a, b, chatSortFilter));
   },
+  getSelectedChatId: ({ selectedChatId }) => selectedChatId,
   getSelectedChat: ({ selectedChatId, allConversations }) => {
     const selectedChat = allConversations.find(
       conversation => conversation.id === selectedChatId
