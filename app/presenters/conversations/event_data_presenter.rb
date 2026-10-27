@@ -25,7 +25,7 @@ class Conversations::EventDataPresenter < SimpleDelegator
   def webhook_data
     push_data.merge(
       account: account.webhook_data,
-      custom_attributes: (custom_attributes || {}).except(*ManualEscalations::Details::KEYS),
+      custom_attributes: (custom_attributes || {}).except(*ManualEscalations::Details::PRIVATE_KEYS),
       messages: webhook_push_messages
     )
   end

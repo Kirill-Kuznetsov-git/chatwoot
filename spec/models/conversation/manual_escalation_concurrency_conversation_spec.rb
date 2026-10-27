@@ -3,6 +3,48 @@ require 'rails_helper'
 RSpec.describe Conversation do
   self.use_transactional_tests = false
 
+  it 'preserves the first actor against a stale concurrent save by another operator' do
+    account = create(:account)
+    first = create(:user, account: account, name: 'First operator')
+    second = create(:user, account: account, name: 'Second operator')
+    conversation = create(:conversation, account: account).reload
+    stale = described_class.find(conversation.id)
+    worker = nil
+    with_modified_env(MANUAL_ESCALATION_ACCOUNT_IDS: account.id.to_s, MANUAL_ESCALATION_AUTHOR_ENABLED: 'true') do
+      conversation.with_lock do
+        Current.user = first
+        conversation.update_labels(['escalated'])
+        connection_id = Queue.new
+        worker = Thread.new do
+          ActiveRecord::Base.connection_pool.with_connection do |connection|
+            Current.reset
+            Current.user = second
+            connection_id << connection.select_value('SELECT pg_backend_pid()')
+            stale.update!(custom_attributes: { 'manual_escalation_author' => { 'id' => second.id, 'name' => 'Spoof' } })
+          ensure
+            Current.reset
+          end
+        end
+        pid = connection_id.pop
+        Timeout.timeout(5) do
+          until ActiveRecord::Base.connection.select_value("SELECT wait_event_type FROM pg_stat_activity WHERE pid = #{Integer(pid)}") == 'Lock'
+            sleep 0.01
+          end
+        end
+      end
+      expect(worker.join(5)).to eq(worker)
+      worker.value
+      expect(conversation.reload.custom_attributes['manual_escalation_author']).to include('id' => first.id, 'name' => first.name)
+    end
+  ensure
+    worker&.join(5)
+    Current.reset
+    conversation&.destroy!
+    account&.destroy!
+    first&.destroy!
+    second&.destroy!
+  end
+
   it 'serializes a label commit ahead of a stale automatic resolution on another database connection' do
     account = create(:account)
     conversation = create(:conversation, account: account).reload

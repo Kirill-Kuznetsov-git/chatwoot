@@ -32,7 +32,7 @@ module ManualEscalation
   end
 
   def manual_escalation_internal_keys
-    [manual_escalation_link_key, 'manual_escalation_hold', *ManualEscalations::Details::KEYS]
+    [manual_escalation_link_key, 'manual_escalation_hold', *ManualEscalations::Details::PRIVATE_KEYS]
   end
 
   def manual_escalation_tagged?
@@ -70,6 +70,7 @@ module ManualEscalation
     return unless manual_escalation_enabled?
 
     restore_manual_escalation_status(persisted)
+    ManualEscalations::Author.new(self).sync!(persisted, operator: human_operator_escalation_action? ? Current.user : nil)
     sync_manual_escalation_hold(persisted)
   end
 
@@ -123,9 +124,7 @@ module ManualEscalation
   end
 
   def human_escalation_action?
-    return true if Current.contact.present? || Current.user.is_a?(Contact)
-
-    human_operator_escalation_action?
+    Current.contact.present? || Current.user.is_a?(Contact) || human_operator_escalation_action?
   end
 
   def human_operator_escalation_action?

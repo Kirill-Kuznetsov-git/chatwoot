@@ -15,7 +15,7 @@ module ManualEscalationWebhooks
   def without_escalation_details(value)
     return value unless value.is_a?(Hash)
 
-    keys = ManualEscalations::Details::KEYS
+    keys = ManualEscalations::Details::PRIVATE_KEYS
     value.except(*keys, *keys.map(&:to_sym))
   end
 

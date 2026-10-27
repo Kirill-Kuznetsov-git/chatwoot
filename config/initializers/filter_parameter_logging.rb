@@ -13,4 +13,4 @@ filter_regex = /\A(?!.*\bwebsite_token\b).*token/i
 Rails.application.config.filter_parameters += [filter_regex]
 
 # Operator escalation free text must never appear in request logs.
-Rails.application.config.filter_parameters += [:manual_escalation_title, :manual_escalation_reason, :title, :reason]
+Rails.application.config.filter_parameters += [:manual_escalation_title, :manual_escalation_reason, :manual_escalation_author, :title, :reason]

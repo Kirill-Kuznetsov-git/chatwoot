@@ -138,4 +138,36 @@ RSpec.describe 'Manual escalation customer privacy', type: :request do
       expect(conversation.reload.custom_attributes).to include('manual_escalation_title' => 'Private title', 'manual_escalation_reason' => 'Другое')
     end
   end
+
+  it 'keeps the author private in widget HTTP, Liquid and customer events even when disabled' do
+    operator = create(:user, account: account, role: :administrator, name: 'PRIVATE-AUTHOR')
+    fresh = create(:conversation, account: account, inbox: widget.inbox, contact: contact, contact_inbox: contact_inbox,
+                                  custom_attributes: { 'customer_field' => 'visible' })
+    Current.user = operator
+    with_modified_env(MANUAL_ESCALATION_AUTHOR_ENABLED: 'true') { fresh.update_labels(['escalated']) }
+    Current.reset
+    fresh.reload
+    with_modified_env(MANUAL_ESCALATION_ACCOUNT_IDS: '', MANUAL_ESCALATION_DETAILS_ENABLED: 'false') do
+      destroy_path = '/api/v1/widget/conversations/destroy_custom_attributes'
+      customer_headers = { 'X-Auth-Token' => token }
+      post destroy_path, headers: customer_headers,
+                         params: { website_token: widget.website_token, custom_attribute: 'nonexistent' }, as: :json
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include('customer_field')
+      expect(response.body).not_to include('PRIVATE-AUTHOR', 'manual_escalation_author')
+      expect(ConversationDrop.new(fresh).custom_attribute).to eq('customer_field' => 'visible')
+      clear_enqueued_jobs
+      ActionCableListener.instance.conversation_updated(Events::Base.new(:'conversation.updated', Time.zone.now, conversation: fresh))
+      customer_job = enqueued_jobs.find { |job| job[:job] == ActionCableBroadcastJob && job[:args][0].include?(contact_inbox.pubsub_token) }
+      expect(customer_job[:args][2].to_json).not_to include('PRIVATE-AUTHOR', 'manual_escalation_author')
+      customer_params = { website_token: widget.website_token, custom_attributes: { manual_escalation_author: { name: 'Spoof' } } }
+      post '/api/v1/widget/conversations/set_custom_attributes', headers: customer_headers, params: customer_params, as: :json
+      expect(fresh.reload.custom_attributes.dig('manual_escalation_author', 'name')).to eq('PRIVATE-AUTHOR')
+      post destroy_path, headers: customer_headers,
+                         params: { website_token: widget.website_token, custom_attribute: 'manual_escalation_author' }, as: :json
+      expect(fresh.reload.custom_attributes.dig('manual_escalation_author', 'name')).to eq('PRIVATE-AUTHOR')
+    end
+  ensure
+    Current.reset
+  end
 end
