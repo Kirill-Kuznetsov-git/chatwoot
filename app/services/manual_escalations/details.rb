@@ -2,6 +2,7 @@ class ManualEscalations::Details
   TITLE_KEY = 'manual_escalation_title'.freeze
   REASON_KEY = 'manual_escalation_reason'.freeze
   KEYS = [TITLE_KEY, REASON_KEY].freeze
+  PRIVATE_KEYS = [*KEYS, ManualEscalations::Author::KEY].freeze
   MAX_LENGTH = 150
   DEFAULT_REASONS = ['Баг на сайте', 'Проблема при покупке', 'Проблема при продаже', 'Платёж или вывод', 'Другое'].freeze
   TOPICS = {
@@ -42,7 +43,8 @@ class ManualEscalations::Details
     reason = attributes[REASON_KEY]
     reason = '' unless valid_reason?(reason) && reason.is_a?(String)
     { enabled: enabled?, title: override.presence || automatic_title, title_override: override,
-      reason: reason, reasons: reasons, max_length: MAX_LENGTH, escalation_label: @conversation.manual_escalation_label }
+      reason: reason, reasons: reasons, max_length: MAX_LENGTH, escalation_label: @conversation.manual_escalation_label,
+      author: ManualEscalations::Author.new(@conversation).as_json }
   end
 
   def automatic_title
