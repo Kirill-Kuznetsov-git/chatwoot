@@ -14,6 +14,17 @@ commonHelpers();
 
 describe('#getters', () => {
   describe('#getAllConversations', () => {
+    it('orders the list without reordering the stored conversations', () => {
+      const state = { allConversations: [...conversations] };
+      expect(getters.getAllConversations(state).map(chat => chat.id)).toEqual([
+        conversations[1].id,
+        conversations[2].id,
+        conversations[3].id,
+        conversations[0].id,
+      ]);
+      expect(state.allConversations).toEqual(conversations);
+    });
+
     it('returns conversations ordered by lastActivityAt in descending order if no sort order is available', () => {
       const state = { allConversations: [...conversations] };
       expect(getters.getAllConversations(state)).toEqual([
