@@ -13,7 +13,7 @@ class ManualEscalations::Author
     previous = persisted&.custom_attributes || {}
     if previous.key?(KEY)
       attributes[KEY] = previous[KEY]
-    elsif operator && capture_enabled? && first_escalation?(persisted, previous)
+    elsif operator && first_escalation?(persisted, previous)
       attributes[KEY] = snapshot(operator)
     end
     @conversation.custom_attributes = attributes
@@ -29,10 +29,6 @@ class ManualEscalations::Author
   end
 
   private
-
-  def capture_enabled?
-    ENV.fetch('MANUAL_ESCALATION_AUTHOR_ENABLED', 'false') == 'true'
-  end
 
   def snapshot(operator)
     name = operator.name.to_s.gsub(/[\p{Cc}\p{Cf}\p{Cs}\p{Zl}\p{Zp}]/, ' ').squish.first(150)
@@ -51,10 +47,14 @@ class ManualEscalations::Author
   end
 
   def first_escalation?(persisted, previous)
-    return false if previous.key?('manual_escalation_hold') || previous[@conversation.manual_escalation_link_key].present?
-    return false if persisted&.manual_escalation_tagged?
+    return false unless ENV.fetch('MANUAL_ESCALATION_AUTHOR_ENABLED', 'false') == 'true'
+    return false if previously_escalated?(persisted, previous)
 
     @conversation.label_list_changed? && @conversation.label_list.any? { |label| label.downcase == @conversation.manual_escalation_label }
+  end
+
+  def previously_escalated?(persisted, previous)
+    previous.key?('manual_escalation_hold') || previous[@conversation.manual_escalation_link_key].present? || persisted&.manual_escalation_tagged?
   end
 
   def mapped_slack_id(user_id)

@@ -140,8 +140,8 @@ RSpec.describe 'Manual escalation author', type: :request do
     post path, headers: headers, params: { title: 'Title', reason: '', escalate: true }, as: :json
     original = conversation.reload.custom_attributes['manual_escalation_author']
     with_modified_env(MANUAL_ESCALATION_AUTHOR_ENABLED: 'false') do
-      post path.sub('/manual_escalation_details', '/custom_attributes'), headers: headers,
-                                                                         params: { custom_attributes: { manual_escalation_author: { name: 'Spoof' } } }, as: :json
+      native_path = path.sub('/manual_escalation_details', '/custom_attributes')
+      post native_path, headers: headers, params: { custom_attributes: { manual_escalation_author: { name: 'Spoof' } } }, as: :json
       expect(conversation.reload.custom_attributes['manual_escalation_author']).to eq(original)
     end
   end
