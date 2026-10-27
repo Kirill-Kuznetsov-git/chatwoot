@@ -1,5 +1,5 @@
 import { useConversationLabels } from '../useConversationLabels';
-import { nextTick, reactive } from 'vue';
+import { computed, nextTick, reactive } from 'vue';
 import ConversationAPI from 'dashboard/api/conversations';
 import { useStore, useStoreGetters } from 'dashboard/composables/store';
 
@@ -32,6 +32,9 @@ describe('useConversationLabels', () => {
         ],
       },
     };
+    getters.getSelectedChatId = computed(
+      () => getters.getSelectedChat.value.id
+    );
 
     useStore.mockReturnValue(store);
     useStoreGetters.mockReturnValue(getters);

@@ -98,7 +98,11 @@ export function useConversationLabels({ coordinate = false } = {}) {
   };
   // Only the always-mounted dashboard coordinator owns navigation cleanup.
   if (coordinate) {
-    watch([conversationId, accountId], cancelEscalation, { flush: 'sync' });
+    // List sorting can briefly remove a chat from the selected-record lookup.
+    // Only a change to the stored selection is actual conversation navigation.
+    watch([getters.getSelectedChatId, accountId], cancelEscalation, {
+      flush: 'sync',
+    });
   }
 
   const confirmEscalation = async values => {

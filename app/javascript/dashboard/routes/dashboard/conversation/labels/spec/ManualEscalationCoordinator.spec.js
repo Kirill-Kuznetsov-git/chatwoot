@@ -11,6 +11,7 @@ import { useAgentsList } from 'dashboard/composables/useAgentsList';
 import { useConversationHotKeys } from 'dashboard/composables/commands/useConversationHotKeys';
 import { useConversationLabels } from 'dashboard/composables/useConversationLabels';
 import ConversationAPI from 'dashboard/api/conversations';
+import conversationGetters from 'dashboard/store/modules/conversations/getters';
 import ManualEscalationCoordinator from '../ManualEscalationCoordinator.vue';
 
 vi.mock('dashboard/composables/store');
@@ -31,6 +32,7 @@ vi.mock('dashboard/api/conversations', () => ({
 let store;
 let wrapper;
 let command;
+let conversationState;
 const details = {
   enabled: true,
   title: 'Automatic topic',
@@ -41,17 +43,32 @@ const details = {
 };
 
 beforeEach(() => {
-  store = {
-    dispatch: vi.fn(),
-    getters: reactive({
-      getSelectedChat: {
+  conversationState = reactive({
+    selectedChatId: 1,
+    chatSortFilter: 'last_activity_at_desc',
+    allConversations: [
+      {
         id: 1,
         account_id: 1,
         status: 'open',
+        last_activity_at: 100,
         manual_escalation_details: {
           enabled: true,
           escalation_label: 'escalated',
         },
+      },
+      { id: 2, account_id: 1, last_activity_at: 99 },
+    ],
+  });
+  store = {
+    dispatch: vi.fn(),
+    getters: reactive({
+      get getSelectedChatId() {
+        return conversationGetters.getSelectedChatId(conversationState);
+      },
+      getCurrentAccountId: 1,
+      get getSelectedChat() {
+        return conversationGetters.getSelectedChat(conversationState);
       },
       'labels/getLabels': [{ id: 1, title: 'escalated' }],
       'conversationLabels/getConversationLabels': () => [],
@@ -142,7 +159,7 @@ describe('dashboard escalation coordinator without conversation sidebar', () => 
     await flushPromises();
     expect(wrapper.find('[role="alert"]').exists()).toBe(true);
     expect(store.dispatch).not.toHaveBeenCalled();
-    store.getters.getSelectedChat = { id: 1, account_id: 2 };
+    store.getters.getCurrentAccountId = 2;
     await flushPromises();
     expect(wrapper.find('input').exists()).toBe(false);
   });
@@ -158,5 +175,71 @@ describe('dashboard escalation coordinator without conversation sidebar', () => 
     });
     caller.unmount();
     expect(wrapper.find('input').exists()).toBe(true);
+  });
+
+  it('still opens an idle proposal if background activity reorders the list while loading it', async () => {
+    let complete;
+    ConversationAPI.getManualEscalationDetails.mockReturnValue(
+      new Promise(resolve => {
+        complete = resolve;
+      })
+    );
+    const pending = command.handler(command);
+    conversationState.allConversations[1].last_activity_at = 200;
+    conversationGetters.getAllConversations(conversationState);
+    complete({ data: details });
+    await pending;
+    await flushPromises();
+
+    expect(wrapper.find('input').element.value).toBe('Automatic topic');
+    expect(
+      ConversationAPI.updateManualEscalationDetails
+    ).not.toHaveBeenCalled();
+  });
+
+  it.each([2, null])(
+    'still discards the draft when the selected conversation changes to %s',
+    async selectedChatId => {
+      await command.handler(command);
+      await flushPromises();
+      await wrapper.find('input').setValue('Draft for the first conversation');
+      conversationState.selectedChatId = selectedChatId;
+      await flushPromises();
+
+      expect(wrapper.find('input').exists()).toBe(false);
+      expect(
+        ConversationAPI.updateManualEscalationDetails
+      ).not.toHaveBeenCalled();
+    }
+  );
+
+  it('keeps the title and reason when background activity reorders the conversation list', async () => {
+    await command.handler(command);
+    await flushPromises();
+    await wrapper.find('input').setValue('Operator draft');
+    await wrapper.find('select').setValue('Other');
+
+    conversationState.allConversations[1].last_activity_at = 200;
+    expect(
+      conversationGetters
+        .getAllConversations(conversationState)
+        .map(conversation => conversation.id)
+    ).toEqual([2, 1]);
+    await flushPromises();
+
+    expect(wrapper.find('input').exists()).toBe(true);
+    expect(wrapper.find('input').element.value).toBe('Operator draft');
+    expect(wrapper.find('select').element.value).toBe('Other');
+    expect(
+      ConversationAPI.updateManualEscalationDetails
+    ).not.toHaveBeenCalled();
+
+    await wrapper.find('[data-confirm]').trigger('click');
+    await flushPromises();
+    expect(ConversationAPI.updateManualEscalationDetails).toHaveBeenCalledWith(
+      1,
+      { title: 'Operator draft', reason: 'Other', escalate: true }
+    );
+    expect(wrapper.find('input').exists()).toBe(false);
   });
 });

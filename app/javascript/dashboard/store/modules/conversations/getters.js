@@ -48,6 +48,7 @@ const getters = {
       })
       .sort((a, b) => sortComparator(a, b, chatSortFilter));
   },
+  getSelectedChatId: ({ selectedChatId }) => selectedChatId,
   getSelectedChat: ({ selectedChatId, allConversations }) => {
     const selectedChat = allConversations.find(
       conversation => conversation.id === selectedChatId
