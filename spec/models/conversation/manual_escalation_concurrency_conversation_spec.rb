@@ -10,7 +10,7 @@ RSpec.describe Conversation do
     conversation = create(:conversation, account: account).reload
     stale = described_class.find(conversation.id)
     worker = nil
-    with_modified_env(MANUAL_ESCALATION_ACCOUNT_IDS: account.id.to_s) do
+    with_modified_env(MANUAL_ESCALATION_ACCOUNT_IDS: account.id.to_s, MANUAL_ESCALATION_AUTHOR_ENABLED: 'true') do
       conversation.with_lock do
         Current.user = first
         conversation.update_labels(['escalated'])

@@ -144,7 +144,7 @@ RSpec.describe 'Manual escalation customer privacy', type: :request do
     fresh = create(:conversation, account: account, inbox: widget.inbox, contact: contact, contact_inbox: contact_inbox,
                                   custom_attributes: { 'customer_field' => 'visible' })
     Current.user = operator
-    fresh.update_labels(['escalated'])
+    with_modified_env(MANUAL_ESCALATION_AUTHOR_ENABLED: 'true') { fresh.update_labels(['escalated']) }
     Current.reset
     fresh.reload
     with_modified_env(MANUAL_ESCALATION_ACCOUNT_IDS: '', MANUAL_ESCALATION_DETAILS_ENABLED: 'false') do

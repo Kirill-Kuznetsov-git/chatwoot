@@ -18,7 +18,7 @@ RSpec.describe 'Manual escalation author', type: :request do
 
   around do |example|
     with_modified_env(MANUAL_ESCALATION_ACCOUNT_IDS: account.id.to_s, MANUAL_ESCALATION_DETAILS_ENABLED: 'true',
-                      MANUAL_ESCALATION_SLACK_USERS: mapping) { example.run }
+                      MANUAL_ESCALATION_AUTHOR_ENABLED: 'true', MANUAL_ESCALATION_SLACK_USERS: mapping) { example.run }
   end
 
   it 'records the authenticated operator rather than the assignee at confirmation' do
@@ -124,6 +124,25 @@ RSpec.describe 'Manual escalation author', type: :request do
         fresh.update_labels(['escalated'])
         expect(ManualEscalations::Details.new(fresh).as_json[:author]).to eq('id' => user.id, 'name' => user.name)
       end
+    end
+  end
+
+  it 'allows escalation without capturing authors until all privacy-aware processes are deployed' do
+    with_modified_env(MANUAL_ESCALATION_AUTHOR_ENABLED: 'false') do
+      post path, headers: headers, params: { title: 'Title', reason: '', escalate: true }, as: :json
+    end
+    expect(response).to have_http_status(:ok)
+    expect(conversation.reload.label_list).to include('escalated')
+    expect(conversation.custom_attributes).not_to have_key('manual_escalation_author')
+  end
+
+  it 'keeps existing author metadata immutable when capture is disabled for rollback' do
+    post path, headers: headers, params: { title: 'Title', reason: '', escalate: true }, as: :json
+    original = conversation.reload.custom_attributes['manual_escalation_author']
+    with_modified_env(MANUAL_ESCALATION_AUTHOR_ENABLED: 'false') do
+      post path.sub('/manual_escalation_details', '/custom_attributes'), headers: headers,
+                                                                         params: { custom_attributes: { manual_escalation_author: { name: 'Spoof' } } }, as: :json
+      expect(conversation.reload.custom_attributes['manual_escalation_author']).to eq(original)
     end
   end
 end

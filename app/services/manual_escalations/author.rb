@@ -13,7 +13,7 @@ class ManualEscalations::Author
     previous = persisted&.custom_attributes || {}
     if previous.key?(KEY)
       attributes[KEY] = previous[KEY]
-    elsif operator && first_escalation?(persisted, previous)
+    elsif operator && capture_enabled? && first_escalation?(persisted, previous)
       attributes[KEY] = snapshot(operator)
     end
     @conversation.custom_attributes = attributes
@@ -29,6 +29,10 @@ class ManualEscalations::Author
   end
 
   private
+
+  def capture_enabled?
+    ENV.fetch('MANUAL_ESCALATION_AUTHOR_ENABLED', 'false') == 'true'
+  end
 
   def snapshot(operator)
     name = operator.name.to_s.gsub(/[\p{Cc}\p{Cf}\p{Cs}\p{Zl}\p{Zp}]/, ' ').squish.first(150)
