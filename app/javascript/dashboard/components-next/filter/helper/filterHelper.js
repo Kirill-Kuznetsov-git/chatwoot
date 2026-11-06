@@ -8,6 +8,8 @@ export const CONVERSATION_ATTRIBUTES = {
   INBOX_ID: 'inbox_id',
   TEAM_ID: 'team_id',
   CONTACT_ID: 'contact_id',
+  CARE_SEGMENT_WEIGHT: 'care_segment_weight',
+  CARE_SEGMENT_ROLE: 'care_segment_role',
   DISPLAY_ID: 'display_id',
   CAMPAIGN_ID: 'campaign_id',
   LABELS: 'labels',

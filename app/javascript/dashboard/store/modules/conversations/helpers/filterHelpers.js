@@ -83,6 +83,14 @@ const getValueFromConversation = (conversation, attributeKey) => {
       return conversation.inbox_id;
     case 'team_id':
       return conversation.meta?.team?.id;
+    case 'care_segment_weight':
+    case 'care_segment_role': {
+      const key = attributeKey.replace('care_', '');
+      const attributes = conversation.meta?.sender?.custom_attributes;
+      if (attributes) return attributes[key] ?? null;
+      const segment = conversation.care_segment ?? conversation.careSegment;
+      return segment?.[key.replace('segment_', '')] ?? null;
+    }
     case 'browser_language':
     case 'referer':
       return conversation.additional_attributes?.[attributeKey];

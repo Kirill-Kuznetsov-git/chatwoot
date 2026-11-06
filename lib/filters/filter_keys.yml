@@ -14,6 +14,14 @@
 ### ----- Conversation Filters ----- ###
 
 conversations:
+  care_segment_weight:
+    attribute_type: "standard"
+    data_type: "text"
+    filter_operators: ["equal_to", "not_equal_to"]
+  care_segment_role:
+    attribute_type: "standard"
+    data_type: "text"
+    filter_operators: ["equal_to", "not_equal_to"]
   status:
     attribute_type: "standard"
     data_type: "text"

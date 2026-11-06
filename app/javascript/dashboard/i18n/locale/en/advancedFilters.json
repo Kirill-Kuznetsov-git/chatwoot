@@ -20,6 +20,7 @@
     },
     "INPUT_PLACEHOLDER": "Enter value",
     "CONTACT_SEARCH_PLACEHOLDER": "Search contacts",
+    "CONTACT_WITH_STARPETS_ID": "{contact} / StarPets ID",
     "CONTACT_FALLBACK": "Contact #{id}",
     "OPERATOR_LABELS": {
       "equal_to": "Equal to",

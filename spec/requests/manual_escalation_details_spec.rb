@@ -21,6 +21,30 @@ RSpec.describe 'Manual escalation details', type: :request do
     expect(response.parsed_body['reasons']).to include('Другое')
   end
 
+  it 'provides only the three VIP weights when enabled in scope, without persisting new metadata' do
+    with_modified_env(MANUAL_ESCALATION_VIP_ENABLED: 'true') do
+      ['Whale', 'Big Whale', 'Mega Whale', 'Big Fish', '<!channel>', nil].each do |weight|
+        conversation.contact.update!(custom_attributes: { segment_weight: weight })
+        get path, headers: headers
+        expect(response).to have_http_status(:ok)
+        expected = ['Whale', 'Big Whale', 'Mega Whale'].include?(weight) ? weight : nil
+        expect(response.parsed_body['vip_segment']).to eq(expected)
+        expect(conversation.reload.custom_attributes).not_to have_key('vip_segment')
+      end
+    end
+  end
+
+  it 'does not provide a VIP weight while disabled or outside the escalation scope' do
+    conversation.contact.update!(custom_attributes: { segment_weight: 'Whale' })
+    [{ MANUAL_ESCALATION_VIP_ENABLED: 'false' },
+     { MANUAL_ESCALATION_VIP_ENABLED: 'true', MANUAL_ESCALATION_INBOX_IDS: '0' }].each do |env|
+      with_modified_env(env) do
+        get path, headers: headers
+        expect(response.parsed_body['vip_segment']).to be_nil
+      end
+    end
+  end
+
   it 'uses the account native reason list when installed' do
     create(:custom_attribute_definition, account: account, attribute_key: 'manual_escalation_reason',
                                          attribute_model: :conversation_attribute, attribute_display_type: :list, attribute_values: ['Новая причина'])

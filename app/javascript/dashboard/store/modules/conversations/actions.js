@@ -454,6 +454,20 @@ const actions = {
     commit(types.UPDATE_CONVERSATION_CONTACT, data);
   },
 
+  updateConversationContactAttributes({ state, commit }, contact) {
+    if (!contact.custom_attributes) return;
+
+    state.allConversations.forEach(conversation => {
+      if (conversation.meta?.sender?.id !== contact.id) return;
+
+      commit(types.UPDATE_CONVERSATION_CONTACT, {
+        ...conversation.meta.sender,
+        custom_attributes: contact.custom_attributes,
+        conversationId: conversation.id,
+      });
+    });
+  },
+
   setActiveInbox({ commit }, inboxId) {
     commit(types.SET_ACTIVE_INBOX, inboxId);
   },

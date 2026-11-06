@@ -44,7 +44,7 @@ class ManualEscalations::Details
     reason = '' unless valid_reason?(reason) && reason.is_a?(String)
     { enabled: enabled?, title: override.presence || automatic_title, title_override: override,
       reason: reason, reasons: reasons, max_length: MAX_LENGTH, escalation_label: @conversation.manual_escalation_label,
-      author: ManualEscalations::Author.new(@conversation).as_json }
+      author: ManualEscalations::Author.new(@conversation).as_json, vip_segment: vip_segment }
   end
 
   def automatic_title
@@ -79,6 +79,13 @@ class ManualEscalations::Details
   end
 
   private
+
+  def vip_segment
+    return unless enabled? && ENV.fetch('MANUAL_ESCALATION_VIP_ENABLED', 'false') == 'true'
+
+    weight = @conversation.contact&.custom_attributes.to_h['segment_weight']
+    weight if ['Whale', 'Big Whale', 'Mega Whale'].include?(weight)
+  end
 
   def valid_title?(title)
     return true if title.nil?

@@ -27,6 +27,8 @@ vi.mock('vue-i18n', () => ({
   useI18n: () => ({
     t: (key, params = {}) => {
       if (key === 'FILTER.CONTACT_FALLBACK') return `Contact #${params.id}`;
+      if (key === 'FILTER.CONTACT_WITH_STARPETS_ID')
+        return `${params.contact} / StarPets ID`;
       return key;
     },
   }),
@@ -187,7 +189,7 @@ describe('useConversationFilterContext', () => {
 
     expect(contactFilter).toMatchObject({
       attributeKey: 'contact_id',
-      label: 'FILTER.ATTRIBUTES.CONTACT',
+      label: 'FILTER.ATTRIBUTES.CONTACT / StarPets ID',
       inputType: 'asyncSearchSelect',
       dataType: 'number',
       attributeModel: 'standard',
@@ -222,5 +224,59 @@ describe('useConversationFilterContext', () => {
       { id: 2, name: 'alex@example.com' },
       { id: 3, name: 'Contact #3' },
     ]);
+  });
+
+  it('makes StarPets ID searchable and distinguishable without changing the contact_id payload', async () => {
+    const identifier = '0123456789abcdef01234567';
+    ContactAPI.search.mockResolvedValue({
+      data: { payload: [{ id: 4, name: 'Operator fixture', identifier }] },
+    });
+    const contact = useConversationFilterContext().filterTypes.value.find(
+      f => f.attributeKey === 'contact_id'
+    );
+    expect(contact.searchPlaceholder).toContain('StarPets ID');
+    expect(await contact.searchOptions(identifier)).toEqual([
+      { id: 4, name: `Operator fixture · ${identifier}` },
+    ]);
+  });
+
+  it('offers only segment role and weight contact lists using standard equality filters', () => {
+    storeValues['attributes/getContactAttributes'] = ref([
+      {
+        attributeKey: 'segment_weight',
+        attributeDisplayName: 'Segment weight',
+        attributeValues: ['Whale', 'Big Whale'],
+      },
+      {
+        attributeKey: 'segment_role',
+        attributeDisplayName: 'Segment role',
+        attributeValues: ['Buyer', 'Seller'],
+      },
+      {
+        attributeKey: 'segment_priority',
+        attributeDisplayName: 'Hidden',
+        attributeValues: [],
+      },
+    ]);
+    const segments = useConversationFilterContext().filterTypes.value.filter(
+      f => f.attributeKey.startsWith('care_segment_')
+    );
+    expect(segments.map(f => f.attributeKey)).toEqual([
+      'care_segment_weight',
+      'care_segment_role',
+    ]);
+    expect(segments[0].options).toEqual([
+      { id: 'Whale', name: 'Whale' },
+      { id: 'Big Whale', name: 'Big Whale' },
+    ]);
+    segments.forEach(f => {
+      expect(f.attributeModel).toBe('standard');
+      expect(f.inputType).toBe('multiSelect');
+      expect(f.filterOperators.map(op => op.value)).toEqual([
+        'equal_to',
+        'not_equal_to',
+      ]);
+    });
+    delete storeValues['attributes/getContactAttributes'];
   });
 });
