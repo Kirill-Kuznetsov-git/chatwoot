@@ -64,8 +64,8 @@ class Conversations::FilterService < FilterService
 
     @filter_values["value_#{current_index}"] = values
     @filter_values['care_account_id'] = @account.id
-    membership = query_hash[:filter_operator] == 'equal_to' ? 'IN' : 'NOT IN'
-    "conversations.contact_id #{membership} (SELECT contacts.id FROM contacts WHERE contacts.account_id = :care_account_id " \
+    membership = query_hash[:filter_operator] == 'equal_to' ? 'EXISTS' : 'NOT EXISTS'
+    "#{membership} (SELECT 1 FROM contacts WHERE contacts.account_id = :care_account_id AND contacts.id = conversations.contact_id " \
       "AND (contacts.custom_attributes ? 'segment_weight' OR contacts.custom_attributes ? 'segment_role') " \
       "AND contacts.custom_attributes ->> '#{key}' IN (:value_#{current_index})) #{query_hash[:query_operator]}"
   end
