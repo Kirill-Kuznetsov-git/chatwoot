@@ -54,6 +54,7 @@ export function useConversationFilterContext() {
   const conversationAttributes = useMapGetter(
     'attributes/getConversationAttributes'
   );
+  const contactAttributes = useMapGetter('attributes/getContactAttributes');
 
   const labels = useMapGetter('labels/getLabels');
   const agents = useMapGetter('agents/getAgents');
@@ -71,12 +72,18 @@ export function useConversationFilterContext() {
 
   const searchContacts = createContactSearcher();
 
-  const contactOptionName = contact =>
-    contact.name ||
-    contact.email ||
-    contact.phoneNumber ||
-    contact.identifier ||
-    t('FILTER.CONTACT_FALLBACK', { id: contact.id });
+  const contactOptionName = contact => {
+    const name =
+      contact.name ||
+      contact.email ||
+      contact.phoneNumber ||
+      contact.identifier ||
+      t('FILTER.CONTACT_FALLBACK', { id: contact.id });
+    return /^[0-9a-f]{24}$/.test(contact.identifier) &&
+      name !== contact.identifier
+      ? `${name} · ${contact.identifier}`
+      : name;
+  };
 
   const searchContactOptions = async query => {
     const contacts = await searchContacts(query, {
@@ -102,6 +109,27 @@ export function useConversationFilterContext() {
       getOperatorTypes,
       'conversation'
     )
+  );
+
+  const segmentFilterTypes = computed(() =>
+    contactAttributes.value
+      .filter(attribute =>
+        ['segment_weight', 'segment_role'].includes(attribute.attributeKey)
+      )
+      .map(attribute => ({
+        attributeKey: `care_${attribute.attributeKey}`,
+        value: `care_${attribute.attributeKey}`,
+        attributeName: attribute.attributeDisplayName,
+        label: attribute.attributeDisplayName,
+        inputType: 'multiSelect',
+        options: attribute.attributeValues.map(value => ({
+          id: value,
+          name: value,
+        })),
+        dataType: 'text',
+        filterOperators: equalityOperators.value,
+        attributeModel: 'standard',
+      }))
   );
 
   /**
@@ -186,11 +214,15 @@ export function useConversationFilterContext() {
     {
       attributeKey: CONVERSATION_ATTRIBUTES.CONTACT_ID,
       value: CONVERSATION_ATTRIBUTES.CONTACT_ID,
-      attributeName: t('FILTER.ATTRIBUTES.CONTACT'),
-      label: t('FILTER.ATTRIBUTES.CONTACT'),
+      attributeName: t('FILTER.CONTACT_WITH_STARPETS_ID', {
+        contact: t('FILTER.ATTRIBUTES.CONTACT'),
+      }),
+      label: t('FILTER.CONTACT_WITH_STARPETS_ID', {
+        contact: t('FILTER.ATTRIBUTES.CONTACT'),
+      }),
       inputType: 'asyncSearchSelect',
       searchOptions: searchContactOptions,
-      searchPlaceholder: t('FILTER.CONTACT_SEARCH_PLACEHOLDER'),
+      searchPlaceholder: `${t('FILTER.CONTACT_SEARCH_PLACEHOLDER')} / StarPets ID`,
       dataType: 'number',
       filterOperators: equalityOperators.value,
       attributeModel: 'standard',
@@ -284,6 +316,7 @@ export function useConversationFilterContext() {
       filterOperators: dateOperators.value,
       attributeModel: 'standard',
     },
+    ...segmentFilterTypes.value,
     ...customFilterTypes.value,
   ]);
 
