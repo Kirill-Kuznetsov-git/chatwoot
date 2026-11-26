@@ -525,6 +525,10 @@ export const AUTOMATIONS = {
         name: 'ASSIGN_TEAM',
       },
       {
+        key: 'assign_team_if_unassigned',
+        name: 'ASSIGN_TEAM_IF_UNASSIGNED',
+      },
+      {
         key: 'remove_assigned_agent',
         name: 'REMOVE_ASSIGNED_AGENT',
       },
@@ -718,6 +722,11 @@ export const AUTOMATION_ACTION_TYPES = [
   {
     key: 'assign_team',
     label: 'ASSIGN_TEAM',
+    inputType: 'search_select',
+  },
+  {
+    key: 'assign_team_if_unassigned',
+    label: 'ASSIGN_TEAM_IF_UNASSIGNED',
     inputType: 'search_select',
   },
   {

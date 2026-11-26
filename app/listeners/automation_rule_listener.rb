@@ -48,12 +48,23 @@ class AutomationRuleListener < BaseListener
 
     return unless rule_present?(event_name, account)
 
-    rules = current_account_rules(event_name, account)
+    apply_conversation_rules(current_account_rules(event_name, account), account, conversation, changed_attributes)
+  end
 
-    rules.each do |rule|
-      conditions_match = ::AutomationRules::ConditionsFilterService.new(rule, conversation, { changed_attributes: changed_attributes }).perform
-      AutomationRules::ActionService.new(rule, account, conversation).perform if conditions_match.present?
+  def apply_conversation_rules(rules, account, conversation, changed_attributes)
+    fallback, regular = rules.partition(&:team_fallback?)
+    regular.each { |rule| apply_rule(rule, account, conversation, changed_attributes) }
+
+    fallback.sort_by(&:id).each do |rule|
+      break if conversation.reload.team_id.present?
+
+      apply_rule(rule, account, conversation, changed_attributes)
     end
+  end
+
+  def apply_rule(rule, account, conversation, changed_attributes)
+    conditions_match = ::AutomationRules::ConditionsFilterService.new(rule, conversation, { changed_attributes: changed_attributes }).perform
+    AutomationRules::ActionService.new(rule, account, conversation).perform if conditions_match.present?
   end
 
   def rule_present?(event_name, account)

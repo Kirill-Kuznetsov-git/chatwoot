@@ -141,6 +141,7 @@
     "ACTIONS": {
       "ASSIGN_AGENT": "Assign to Agent",
       "ASSIGN_TEAM": "Assign a Team",
+      "ASSIGN_TEAM_IF_UNASSIGNED": "Assign a fallback team",
       "REMOVE_ASSIGNED_AGENT": "Remove Assigned Agent",
       "REMOVE_ASSIGNED_TEAM": "Remove Assigned Team",
       "ADD_LABEL": "Add a Label",
