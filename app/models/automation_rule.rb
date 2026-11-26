@@ -26,6 +26,7 @@ class AutomationRule < ApplicationRecord
 
   validate :json_conditions_format
   validate :json_actions_format
+  validate :team_fallback_format
   validate :query_operator_presence
   validate :query_operator_value
   validates :account_id, presence: true
@@ -41,9 +42,13 @@ class AutomationRule < ApplicationRecord
 
   def actions_attributes
     %w[send_message add_label remove_label send_email_to_team assign_team assign_agent remove_assigned_agent
-       remove_assigned_team send_webhook_event mute_conversation send_attachment change_status resolve_conversation
+       remove_assigned_team assign_team_if_unassigned send_webhook_event mute_conversation send_attachment change_status resolve_conversation
        open_conversation pending_conversation snooze_conversation change_priority send_email_transcript
        add_private_note].freeze
+  end
+
+  def team_fallback?
+    Array(actions).any? { |action| action['action_name'] == 'assign_team_if_unassigned' }
   end
 
   def file_base_data
@@ -78,6 +83,16 @@ class AutomationRule < ApplicationRecord
     actions = attributes - actions_attributes
 
     errors.add(:actions, "Automation actions #{actions.join(',')} not supported.") if actions.any?
+  end
+
+  def team_fallback_format
+    return unless team_fallback?
+
+    params = actions.first['action_params']
+    return if event_name == 'conversation_opened' && actions.one? &&
+              params.is_a?(Array) && params.one? && params.first.to_s.match?(/\A[1-9]\d*\z/)
+
+    errors.add(:actions, 'Team fallback requires one team and must be the only action on conversation opened.')
   end
 
   def query_operator_presence

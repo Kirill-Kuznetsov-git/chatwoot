@@ -106,6 +106,7 @@ export const getActionOptions = ({
   const actionsMap = {
     assign_agent: addNoneToListFn ? addNoneToListFn(agents) : agents,
     assign_team: addNoneToListFn ? addNoneToListFn(teams) : teams,
+    assign_team_if_unassigned: teams,
     send_email_to_team: teams,
     add_label: generateConditionOptions(labels, 'title'),
     remove_label: generateConditionOptions(labels, 'title'),

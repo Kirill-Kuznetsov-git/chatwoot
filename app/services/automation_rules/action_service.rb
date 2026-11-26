@@ -22,6 +22,12 @@ class AutomationRules::ActionService < ActionService
 
   private
 
+  def assign_team_if_unassigned(team_ids)
+    @conversation.with_lock do
+      assign_team([team_ids.first.to_i]) if @conversation.open? && @conversation.team_id.nil?
+    end
+  end
+
   def send_attachment(blob_ids)
     return if conversation_a_tweet?
 
